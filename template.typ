@@ -1,14 +1,7 @@
 // The project function defines how your document looks.
 // It takes your content and some metadata and formats it.
 // Go ahead and customize it to your liking!
-#let project(
-  title: "",
-  abstract: [],
-  authors: (),
-  date: none,
-  logo: none,
-  body,
-) = {
+#let project(title: "", abstract: [], authors: (), date: none, logo: none, body) = {
   // Set the document's basic properties.
   set document(author: authors, title: title)
   set page(numbering: "1", number-align: center)
@@ -28,30 +21,25 @@
   text(2em, weight: 700, title)
 
   // Author information.
-  pad(
-    top: 0.7em,
-    right: 20%,
-    grid(
-      columns: (1fr,) * calc.min(3, authors.len()),
-      gutter: 1em,
-      ..authors.map(author => align(start, strong(author))),
-    ),
-  )
+  pad(top: 0.7em, right: 20%, grid(
+    columns: (1fr,) * calc.min(3, authors.len()),
+    gutter: 1em,
+    ..authors.map(author => align(start, strong(author))),
+  ))
 
   v(2.4fr)
   pagebreak()
 
   // Abstract page.
   v(1fr)
-align(center)[
-    #heading(
-      outlined: false,
-      numbering: none,
-      text(0.85em, smallcaps[Abstract]),
-    )
-    #abstract
-  ]
+  align(
+    center,
+  )[
+      #heading(outlined: false, numbering: none, text(0.85em, smallcaps[Abstract]))
+      #abstract
+    ]
   v(1.618fr)
+
   pagebreak()
 
   // Table of contents.
@@ -60,9 +48,11 @@ align(center)[
   outline(title: "List of tables", target: figure.where(kind: table))
   pagebreak()
 
-
   // Main body.
   set par(justify: true)
 
   body
+  pagebreak()
+  bibliography("bibliography.yaml")
+  outline(title: "Appendix", target: figure.where(kind: "appendix"))
 }

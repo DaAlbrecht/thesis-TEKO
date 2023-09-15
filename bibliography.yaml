@@ -1,0 +1,16 @@
+integon:
+    type: Web
+    date: 2023-09-15
+    url: https://www.integon.io/
+iss:
+  type: Web
+  date: 2023-09-15
+  url: https://www.iss-ag.ch/en
+comblab:
+  type: Web
+  date: 2023-09-15
+  url: https://www.comlab.ch/en.html
+swiss-titels: 
+  type: Web
+  date: 2023-09-15
+  url: https://www.sbfi.admin.ch/dam/sbfi/de/dokumente/erlaeuterung_englischetitelbezeichnungen.pdf.download.pdf/erlaeuterung_englischetitelbezeichnungen.pdf
