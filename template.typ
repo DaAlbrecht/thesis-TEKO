@@ -43,7 +43,7 @@
   pagebreak()
 
   // Table of contents.
-  outline(depth: 3, indent: true)
+  outline(title: "Table of contents", depth: 3, indent: true)
   outline(title: "List of figures", target: figure.where(kind: image))
   outline(title: "List of tables", target: figure.where(kind: table))
   pagebreak()
