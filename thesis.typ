@@ -22,9 +22,11 @@
 #figure(tablex(
   columns: (auto, 1fr),
   rows: (auto),
-  alignment: (left, left),
+  align: (center, left),
   [*Terminology*],
   [*Description*],
+  [OCI],
+  [Open Container Initiative]
 ), kind: table, caption: "Glossary")<glossary>
 
 

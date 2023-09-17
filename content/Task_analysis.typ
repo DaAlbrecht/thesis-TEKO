@@ -155,7 +155,7 @@ The following table identifies the external interfaces of the microservice.
   tablex(
     columns: (auto, auto, 1fr, 2fr),
     rows: (auto),
-    align: (center,center,center,left),
+    align: (center, center, center, left),
     [*ID*],
     [*Trace from*],
     [*Name*],
@@ -171,7 +171,8 @@ The following table identifies the external interfaces of the microservice.
     [EXT-3],
     [REQ-3],
     [OCI],
-    [The microservice is deployed in a containerized environment],
+    [The microservice is deployed in a containerized environment, and therefore
+      should be compliant with the OCI specification],
     [EXT-4],
     [REQ-7],
     [Prometheus],
@@ -285,10 +286,6 @@ the following table.
   kind: table,
   caption: [Data follow],
 )
-
-
-
-
 
 === System Requirements
 
