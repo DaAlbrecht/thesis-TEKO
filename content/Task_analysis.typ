@@ -55,7 +55,7 @@ The following Stakeholders are identified:
   caption: [Stakeholders and their abbreviation],
 )
 
-=== Stakeholder Requirements
+=== Stakeholder Requirements<stakeholder_requirements>
 
 #figure(
   tablex(
@@ -146,8 +146,10 @@ system requirements.
 
 ==== External interfaces
 
-According to the high-level design, the following external interfaces can be
-extracted:
+The microservice needs to interact with different systems to be compliant with
+the stakeholder requirements @stakeholder_requirements.
+#linebreak()
+The following table identifies the external interfaces of the microservice.
 
 #figure(
   tablex(
@@ -187,5 +189,116 @@ extracted:
   caption: [External interfaces],
 )
 
+==== Data follow 
+
+The API expects to receive a request with a message ID. The message ID is used to
+identify the message in the RabbitMQ queue. The microservice then sends a request to
+RabbitMQ to requeue the message. The following figure shows the request flow.
+
+#figure(
+image("../assets/request_flow.svg"),
+kind: image,
+caption: [Request flow],
+)
+
+In both the in and out flow, the microservice needs to aggregate observability data according to
+the following table.
+
+#figure(
+  tablex(
+    columns: (auto,auto,auto, 1fr),
+    rows: (auto),
+    align: (center,center,center,left),
+    [*ID*],
+    [*Trace from*],
+    [*Category*],
+    [*Description*],
+    [OBS-1],
+    [EXT-4],
+    [Metrics],
+    [CPU ussage],
+    [OBS-2],
+    [EXT-4],
+    [Metrics],
+    [Memory usage],
+    [OBS-3],
+    [EXT-4],
+    [Metrics],
+    [Network usage],
+    [OBS-4],
+    [EXT-4],
+    [Metrics],
+    [Request duration],
+    [OBS-5],
+    [EXT-4],
+    [Metrics],
+    [Request size],
+    [OBS-6],
+    [EXT-4],
+    [Metrics],
+    [Response size],
+    [OBS-7],
+    [EXT-4],
+    [Metrics],
+    [Response duration],
+    [OBS-8],
+    [EXT-4],
+    [Metrics],
+    [Response code],
+    [OBS-9],
+    [EXT-4],
+    [Metrics],
+    [Response error],
+    [OBS-10],
+    [EXT-5],
+    [Logs],
+    [Request body],
+    [OBS-11],
+    [EXT-5],
+    [Logs],
+    [Response body],
+    [OBS-12],
+    [EXT-5],
+    [Logs],
+    [Request headers],
+    [OBS-13],
+    [EXT-5],
+    [Logs],
+    [Response headers],
+    [OBS-14],
+    [EXT-5],
+    [Logs],
+    [Request message ID],
+    [OBS-15],
+    [EXT-5],
+    [Logs],
+    [Response message ID],
+    [OBS-16],
+    [EXT-6],
+    [Tracing],
+    [Request trace],
+    [OBS-17],
+    [EXT-6],
+    [Tracing],
+    [Response trace],
+  ),
+  kind: table,
+  caption: [Data follow],
+)
+
+
+
+
+
 === System Requirements
 
+#figure(
+tablex(
+  columns: (auto, auto, 1fr),
+  rows: (auto),
+  align: (center, center, left),
+  [*ID*],
+  [*Trace from*],
+  [*Description*],
+)
+)

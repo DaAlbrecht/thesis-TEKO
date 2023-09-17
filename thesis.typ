@@ -23,8 +23,8 @@
   columns: (auto, 1fr),
   rows: (auto),
   alignment: (left, left),
-  [*terminology*],
-  [*description*],
+  [*Terminology*],
+  [*Description*],
 ), kind: table, caption: "Glossary")<glossary>
 
 
@@ -75,7 +75,7 @@ outline the requirements and objectives.
 
 == API Library
 
-= Alignment with the requirements TODO: better title
+= Verification
 
 = Conclusion
 
