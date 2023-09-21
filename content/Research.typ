@@ -251,12 +251,16 @@ suitable client library in @evaluation
 
 The client MUST start a new connection by sending a protocol header. This is an 8-byte sequence:
 #figure(
+rect(
 ```
 +---+---+---+---+---+---+---+---+
 |'A'|'M'|'Q'|'P'| 0 | 0 | 9 | 1 |
 +---+---+---+---+---+---+---+---+
            8 bytes 
 ```,
+fill: (rgb("#F5DEB3")),
+)
+,
 caption: [AMQP Protocol Header],
 )
 
@@ -264,6 +268,7 @@ The client and server then agree on a protocol version.
 After this the general format of a frame is as follows:
 
 #figure(
+rect(
 ```
 0      1         3         7                     size+7      size+8
 +------+---------+---------+     +-------------+ +-----------+
@@ -271,6 +276,8 @@ After this the general format of a frame is as follows:
 +------+---------+---------+     +-------------+ +-----------+
   byte   short      long           'size' bytes     byte 
 ```,
+ fill: (rgb("#F5DEB3")),
+),
 caption: [AMQP Frame Format],
 kind: auto
 )
@@ -313,22 +320,20 @@ align: (center + horizon,  center + horizon),
 [*Type*],
 [*Payload*],
 [Method],
-[```
+cellx(fill: (rgb("#F5DEB3")))[```
 0          2           4
 +----------+-----------+-------------- - -
 | class-id | method-id | arguments...
 +----------+-----------+-------------- - -
    short      short    ...```],
-[Header],
-[```
+[Header],cellx(fill: (rgb("#F5DEB3")))[```
 0          2        4           12               14
 +----------+--------+-----------+----------------+------------- - -
 | class-id | weight | body size | property flags | property list...
 +----------+--------+-----------+----------------+------------- - -
    short     short    long long      short           remainder...
 ```],
-[Body],
-[```
+[Body],cellx(fill: (rgb("#F5DEB3")))[```
 +-----------------------+ +-----------+
 | Opaque binary payload | | frame-end |
 +-----------------------+ +-----------+
@@ -349,6 +354,41 @@ The RabbitMQ Streams protocol is a new messaging protocol that is designed to be
 used with RabbitMQ Streams@rabbitmq_stream_spec. Its still in development and subject to change.
 Similar as in @amqp_0_9_1, we take a short tour through the protocol to get a better understanding of the protocol.
 For a more detailed and complete description, see the RabbitMQ Streams Protocol specification#footnote([https://github.com/rabbitmq/rabbitmq-server/blob/v3.12.x/deps/rabbitmq_stream/docs/PROTOCOL.adoc]).
+
+==== Types 
+
+#figure(
+tablex(
+columns: (auto, 1fr),
+rows:(auto),
+align: (center + horizon,  center + horizon),
+[*Type*],
+[*Description*],
+[int8, int16, int32, int64],
+[Signed integers of 8, 16, 32, and 64 bits, respectively, in big-endian order.],
+[uint8, uint16, uint32, uint64],
+[Unsigned integers of 8, 16, 32, and 64 bits, respectively, in big-endian order.],
+[bytes],
+[32-bit signed integer denoting the length of the bytes, followed by the bytes themselves. length of -1 indicates null.],
+[string],
+[16-bit signed integer denoting the length of the string, followed by the UTF-8 encoded string itself. length of -1 indicates null.],
+[array],
+[32-bit signed integer denoting the length of the array, followed by the repetition of the structure, notation uses \[\], e.g. \[int32\] for an array of int32,]
+))
+
+==== Frame Format 
+
+#figure(
+rect(
+```
++------+---------+
+| Size | Payload |
++------+---------+
+  int32  bytes
+```,
+fill: (rgb("#F5DEB3")),
+)
+)
 
 
 
