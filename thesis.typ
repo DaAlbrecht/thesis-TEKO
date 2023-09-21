@@ -31,6 +31,8 @@
   [Advanced Message Queuing Protocol],
   [TCP],
   [Transmission Control Protocol],
+  [FIFO],
+  [First In First Out],
 ), kind: table, caption: "Glossary")<glossary>
 
 #pagebreak()
@@ -63,7 +65,7 @@
 
 #include "./content/Research.typ"
 
-= Evaluation
+= Evaluation<evaluation>
 
 == Architecture 
 

@@ -94,6 +94,8 @@ queue. Essentially, the default exchange creates the illusion of delivering
 messages directly to queues, even though that's not precisely what's occurring
 from a technical standpoint.
 
+#pagebreak()
+
 === Direct Exchange 
 
 A direct exchange@rabbitmq-direct-exchange operates by delivering messages to queues based on their
@@ -129,13 +131,59 @@ caption: [Fanout Exchange],
 kind: image,
 )
 
-== Routing
+=== Topic Exchange
+
+A topic exchange@rabbitmq-topic-exchange routes messages to queues based on
+matching patterns between the routing key of the message and the binding key
+used to establish a binding.
+
+#figure(
+image("../assets/rabbitmq_topic_exchange.svg" ,width: 70%),
+caption: [Topic Exchange],
+kind: image,
+)
+
+#figure(
+tablex(
+columns: (auto, 1fr),
+rows:(auto),
+align: (center + horizon,  left),
+[*Wildcard*],
+[*Description*],
+[\* (star)],
+[Matches exactly one word.],
+[\# (hash)],
+[Matches zero or more words.],
+),
+kind: table,
+caption: [Topic Exchange Wildcards],
+)
+
+=== Headers Exchange 
+
+A headers exchange@rabbitmq-headers-exchange routes messages based on the value
+of attributes also known as headers that are associated with the message. In
+this case, the routing key is not used. Instead, the attributes of the message
+are evaluated against the attributes of the queue bindings#footnote([https://www.rabbitmq.com/tutorials/amqp-concepts.html#exchange-headers]). If they match, the
+message is routed to the queue. 
 
 == Queues
+
+A RabbitMQ queue is a structured arrangement of messages, where messages are
+added and removed in a FIFO manner, typically delivered to consumers. In a
+general sense, a queue is a sequential data structure with two primary
+operations: adding an item to the end (enqueuing) and removing an item from the
+front (dequeuing).
+
+In messaging systems, various features are closely tied to queues. Some of
+RabbitMQ's queue features, like priorities#footnote([https://www.rabbitmq.com/queues.html#properties]) can
+influence the order in which consumers perceive messages.
 
 === Streams
 
 === Comparasion Queues vs Streams
+
+#pagebreak()
 
 == Protocols
 
@@ -186,11 +234,122 @@ caption: [RabbitMQ Protocols],
 The microservice needs to be able to queue a message again, therfore a streaming queue is used.
 For working with streams, best suited is either the AMQP-0-9-1 or the RabbitMQ-Streams protocol.
 
-=== AMQP 0-9-1
+=== AMQP 0-9-1<amqp_0_9_1>
 
 AMQP, also known as the Advanced Message Queuing Protocol, facilitates
 communication between compliant client applications and matching messaging
 middleware brokers.
 
+In the next sections, we will take a brief look at the AMQP
+wire-level format as specified in the AMQP 0-9-1 specification@amqp_0_9_1_spec.
+This is the format that is used to send and receive messages over the network. The short excourse 
+is intended to provide a better understanding of the AMQP 0-9-1 protocol and help evaluating a
+suitable client library in @evaluation
+
+
+==== AMQP Wire-Level Format
+
+The client MUST start a new connection by sending a protocol header. This is an 8-byte sequence:
+#figure(
+```
++---+---+---+---+---+---+---+---+
+|'A'|'M'|'Q'|'P'| 0 | 0 | 9 | 1 |
++---+---+---+---+---+---+---+---+
+           8 bytes 
+```,
+caption: [AMQP Protocol Header],
+)
+
+The client and server then agree on a protocol version.
+After this the general format of a frame is as follows:
+
+#figure(
+```
+0      1         3         7                     size+7      size+8
++------+---------+---------+     +-------------+ +-----------+
+| type | channel | size    |     |   payload   | | frame-end |
++------+---------+---------+     +-------------+ +-----------+
+  byte   short      long           'size' bytes     byte 
+```,
+caption: [AMQP Frame Format],
+kind: auto
+)
+
+There are four types of frames:
+
+#figure(
+tablex(
+columns: (auto, auto),
+rows:(auto),
+align: (center + horizon,  center + horizon),
+[*Type*],
+[*Name*],
+[1],
+[Method],
+[2],
+[Header],
+[3],
+[Body],
+[4],
+[Heartbeat],
+),
+kind: table,
+caption: [AMQP Frame Types],
+)
+
+The channel number is set to 0 for all global frames, whereas it ranges from 1
+to 65535 for frames that are associated with a particular channel.
+
+The size field indicates the payload's size, excluding the byte at the end of
+the frame. Even though AMQP operates under the assumption of a dependable
+protocol, we utilize the frame's end byte to identify framing errors that might
+result from flawed client or server implementations.
+
+#figure(
+tablex(
+columns: (auto, 1fr),
+rows:(auto),
+align: (center + horizon,  center + horizon),
+[*Type*],
+[*Payload*],
+[Method],
+[```
+0          2           4
++----------+-----------+-------------- - -
+| class-id | method-id | arguments...
++----------+-----------+-------------- - -
+   short      short    ...```],
+[Header],
+[```
+0          2        4           12               14
++----------+--------+-----------+----------------+------------- - -
+| class-id | weight | body size | property flags | property list...
++----------+--------+-----------+----------------+------------- - -
+   short     short    long long      short           remainder...
+```],
+[Body],
+[```
++-----------------------+ +-----------+
+| Opaque binary payload | | frame-end |
++-----------------------+ +-----------+
+```],
+[Heartbeat],
+[no payload],
+ ),
+kind: table,
+caption: [AMQP frame payloads],
+ )
+
+This is general overview of the AMQP 0-9-1 protocol. For more details, see the AMQP 0-9-1 specification#footnote([https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf]).
+AMQP-0-9-1 does not have first class support for streaming queues but streams can be implement using optional 'queue and consumer arguments'#footnote([https://www.rabbitmq.com/queues.html#optional-arguments]).
+
 === RabbitMQ Streams Protocol
+
+The RabbitMQ Streams protocol is a new messaging protocol that is designed to be 
+used with RabbitMQ Streams@rabbitmq_stream_spec. Its still in development and subject to change.
+Similar as in @amqp_0_9_1, we take a short tour through the protocol to get a better understanding of the protocol.
+For a more detailed and complete description, see the RabbitMQ Streams Protocol specification#footnote([https://github.com/rabbitmq/rabbitmq-server/blob/v3.12.x/deps/rabbitmq_stream/docs/PROTOCOL.adoc]).
+
+
+
 

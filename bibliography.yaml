@@ -20,5 +20,22 @@ rabbitmq-direct-exchange:
   url: https://github.com/rabbitmq/rabbitmq-website/blob/a18a5258754b4a9dfa8adff0c947b8600e42450a/site/tutorials/amqp-concepts.md#exchange-direct 
 rabbitmq-fanout-exchange:
   type: Web 
-  date: 2023-09-20
+  date: 2023-09-21
   url: https://github.com/rabbitmq/rabbitmq-website/blob/a18a5258754b4a9dfa8adff0c947b8600e42450a/site/tutorials/amqp-concepts.md#exchange-fanout 
+rabbitmq-topic-exchange:
+  type: Web 
+  date: 2023-09-21
+  url: https://github.com/rabbitmq/rabbitmq-website/blob/a18a5258754b4a9dfa8adff0c947b8600e42450a/site/tutorials/amqp-concepts.md#exchange-topic
+rabbitmq-headers-exchange:
+  type: Web 
+  date: 2023-09-21
+  url: https://github.com/rabbitmq/rabbitmq-website/blob/a18a5258754b4a9dfa8adff0c947b8600e42450a/site/tutorials/amqp-concepts.md#exchange-headers
+amqp_0_9_1_spec:
+  type: Web 
+  date: 2023-09-21
+  url: https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf
+
+rabbitmq_stream_spec:
+  type: Web 
+  date: 2023-09-21
+  url: https://github.com/rabbitmq/rabbitmq-server/blob/v3.12.x/deps/rabbitmq_stream/docs/PROTOCOL.adoc
