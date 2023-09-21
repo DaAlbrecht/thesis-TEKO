@@ -6,3 +6,19 @@ rabbitmq-protocols:
   type: Web
   date: 2023-09-20
   url: https://github.com/rabbitmq/rabbitmq-website/blob/a18a5258754b4a9dfa8adff0c947b8600e42450a/site/protocols.md?plain=1#L18 
+rabbitmq-exchange-types:
+  type: Web 
+  date: 2023-09-20
+  url: https://github.com/rabbitmq/rabbitmq-website/blob/a18a5258754b4a9dfa8adff0c947b8600e42450a/site/tutorials/amqp-concepts.md#exchanges-and-exchange-types 
+rabbitmq-default-exchange:
+  type: Web 
+  date: 2023-09-20
+  url:  https://github.com/rabbitmq/rabbitmq-website/blob/a18a5258754b4a9dfa8adff0c947b8600e42450a/site/tutorials/amqp-concepts.md#exchange-default
+rabbitmq-direct-exchange:
+  type: Web 
+  date: 2023-09-20
+  url: https://github.com/rabbitmq/rabbitmq-website/blob/a18a5258754b4a9dfa8adff0c947b8600e42450a/site/tutorials/amqp-concepts.md#exchange-direct 
+rabbitmq-fanout-exchange:
+  type: Web 
+  date: 2023-09-20
+  url: https://github.com/rabbitmq/rabbitmq-website/blob/a18a5258754b4a9dfa8adff0c947b8600e42450a/site/tutorials/amqp-concepts.md#exchange-fanout 

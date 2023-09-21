@@ -11,13 +11,125 @@ reliable message delivery. It's particularly valuable in distributed systems,
 microservices architectures, and for implementing various messaging patterns
 like publish-subscribe, request-reply, and more.
 
+RabbitMQ, or rather AMQP-0-9-1 achieves this by decoupling the sending and receiving systems.
+The sending system is called a producer and the receiving system is called a
+consumer.
+
 #figure(
-image("../assets/rabbitMQ.svg"),
+image("../assets/rabbitmq_components.svg"),
 caption: [RabbitMQ component overview],
 kind: image,
 )
 
-== Exchange
+A 'connection' represents a persistent, long-lived TCP connection established
+between a client and a RabbitMQ broker. Within this connection, producers have
+the capability to create 'channels,' which can be thought of as virtual
+connections nested within the primary connection.
+
+These channels serve as conduits for producers to transmit messages to an entity
+known as an 'exchange,' which can be likened to a message-routing intermediary,
+akin to a post office in a metaphorical sense. The primary function of the
+exchange is to receive messages from producers and, based on predefined rules
+called 'bindings,' route these messages to various queues.
+
+In this context, a 'queue' acts as a storage buffer for messages. 
+
+A binding is a relationship between an exchange and a queue. Additionally, a
+binding can have an optional 'binding key' parameter that further refines the 
+routing process. The binding key is a string that the exchange can use to 
+determine how to route the message to the queue. The binding key is specific to
+the exchange type. For an overview of the different exchange types, see @exchange-types.
+
+Consumers have two options for interacting with queues: they can either passively subscribe to
+a queue and receive messages as they arrive, or they can actively fetch messages
+from the queue when they choose to do so.
+
+== Exchange<exchange>
+
+Exchanges are AMQP-0-9-1 entities. An exchange receives messages from producers
+and pushes them to queues depending on rules called bindings. An exchange routs
+a message to zero or more queues. AMQP-0-9-1 defines four types of
+exchanges@rabbitmq-exchange-types:
+
+
+#figure(
+tablex(
+columns: (auto, 1fr),
+rows:(auto),
+align: (center + horizon,  left),
+[*Exchange Type*],
+[*Default pre-declared names*],
+[Direct exchange],
+[(Empty string) and amq.direct],
+[Fanout exchange],
+[amq.fanout],
+[Topic exchange],
+[amq.topic],
+[Headers exchange],
+[amq.match (and amq.headers in RabbitMQ)]
+),
+kind: table,
+caption: [Exchange Types],
+)<exchange-types>
+
+=== Default Exchange 
+
+The default exchange@rabbitmq-default-exchange is an unattributed exchange provided by the broker without
+a specific name (it's represented by an empty string). The default exchange is a RabbitMQ extension to the AMQP 0-9-1 direct exchange specification.
+The default exchange routes every message it receives to a queue with the same name as the routing key of the message.
+
+#figure(
+image("../assets/rabbitmq_default_exchange.svg" ,width: 70%),
+caption: [Default Exchange],
+kind: image,
+)
+
+
+For instance, if you were to define a queue with the name "inventory" the AMQP
+0-9-1 broker would automatically establish a binding to the default exchange,
+using "inventory" as binding key (also refered as routing key, but this is
+ambigous and therfore not used here). Consequently, a message sent to the
+default exchange with the routing key "inventory" will be directed to the "inventory"
+queue. Essentially, the default exchange creates the illusion of delivering
+messages directly to queues, even though that's not precisely what's occurring
+from a technical standpoint.
+
+=== Direct Exchange 
+
+A direct exchange@rabbitmq-direct-exchange operates by delivering messages to queues based on their
+binding key. It is well-suited for single-target (unicast) message routing but
+can also be applied to multicast routing scenarios.
+
+Here's a breakdown of how it functions:
+
+#figure(
+image("../assets/rabbitmq_direct_exchange.svg" ,width: 70%),
+caption: [Direct Exchange],
+kind: image,
+)
+
+A queue establishes a binding with the exchange using a specific binding key,
+denoted as K. Whenever a new message arrives at the direct exchange with a
+routing key R, the exchange forwards it to the associated queue if and only if
+the binding key K matches R. In cases where multiple queues are bound to the
+same direct exchange with identical binding key K, the exchange will transmit
+the message to all queues where K equals R.
+
+=== Fanout Exchange 
+
+A fanout exchange@rabbitmq-fanout-exchange distributes messages to every queue connected to it,
+disregarding the routing key. If there are N queues linked to a fanout exchange,
+when a new message is sent to the exchange, a duplicate of the message is
+dispatched to all N queues. Fanout exchanges are perfectly suited for
+broadcasting messages.
+
+#figure(
+image("../assets/rabbitmq_fanout_exchange.svg" ,width: 70%),
+caption: [Fanout Exchange],
+kind: image,
+)
+
+== Routing
 
 == Queues
 

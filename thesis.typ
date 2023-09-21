@@ -28,7 +28,9 @@
   [OCI],
   [Open Container Initiative],
   [AMQP],
-  [Advanced Message Queuing Protocol]
+  [Advanced Message Queuing Protocol],
+  [TCP],
+  [Transmission Control Protocol],
 ), kind: table, caption: "Glossary")<glossary>
 
 #pagebreak()
