@@ -53,7 +53,7 @@
 
 #include "./content/Use_cases.typ"
 
-= Projectplan
+= Project plan
 
 #include "./content/Projectplan.typ"
 

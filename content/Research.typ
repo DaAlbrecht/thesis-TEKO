@@ -8,7 +8,7 @@ middleware that facilitates communication between different parts of a
 distributed application. RabbitMQ is often used in scenarios where you need to
 handle asynchronous communication, decouple components of a system, and ensure
 reliable message delivery. It's particularly valuable in distributed systems,
-microservices architectures, and for implementing various messaging patterns
+and microservices architectures, and for implementing various messaging patterns
 like publish-subscribe, request-reply, and more.
 
 RabbitMQ, or rather AMQP-0-9-1 achieves this by decoupling the sending and receiving systems.
@@ -87,8 +87,8 @@ kind: image,
 
 For instance, if you were to define a queue with the name "inventory" the AMQP
 0-9-1 broker would automatically establish a binding to the default exchange,
-using "inventory" as binding key (also refered as routing key, but this is
-ambigous and therfore not used here). Consequently, a message sent to the
+using "inventory" as the binding key (also referred to as routing key, but this is
+ambiguous and therefore not used here). Consequently, a message sent to the
 default exchange with the routing key "inventory" will be directed to the "inventory"
 queue. Essentially, the default exchange creates the illusion of delivering
 messages directly to queues, even though that's not precisely what's occurring
@@ -200,10 +200,10 @@ align: (center + horizon,  left),
 [AMQP is the fundamental protocol used by RabbitMQ. RabbitMQ was initially 
 created to facilitate the use of AMQP. AMQP is a binary protocol that defines
 strong messaging semantics. The protocol is easy to implement for clients and is
-therfore supported in a large number of clients and languages.],
+therefore supported in a large number of clients and languages.],
 [STOMP],
 [STOMP is a text-based messaging protocol. STOMP emphasizes simplicity. It does
-not define strict messaging semantics and is therefore easy to implement. Its
+not define strict messaging semantics and is therefore easy to implement. It is
 also the only protocol that can be used manually over telnet],
 [MQTT],
 [MQTT is a binary communication protocol that places a strong emphasis on
@@ -214,7 +214,7 @@ for other messaging styles.],
 [AMQP 1.0],
 [Although they share a similar name, AMQP 1.0 is a completely different protocol
 from AMQP 0-9-1. AMQP 1.0 places fewer semantic demands, making it easier to add
-to existing brokers. Although its easier to add to existing brokers, the
+to existing brokers. Although it is easier to add to existing brokers, the
 protocol is substantially more complex than AMQP 0-9-1 and there are fewer
 client implementations],
 [HTTP and WebSockets],
@@ -225,14 +225,14 @@ over HTTP in the following ways:
 - HTTP API to send and receive messages.],
 [RabbitMQ Streams],
 [The RabbitMQ Streams protocol is a new messaging protocol that is designed to be 
-used with RabbitMQ Streams. Its still in development and subject to change.]
+used with RabbitMQ Streams. It's still in development and subject to change.]
 ),
 kind: table,
 caption: [RabbitMQ Protocols],
 )
 
-The microservice needs to be able to queue a message again, therfore a streaming queue is used.
-For working with streams, best suited is either the AMQP-0-9-1 or the RabbitMQ-Streams protocol.
+The microservice needs to be able to queue a message again, therefore a streaming queue is used.
+For working with streams, the best suited is either the AMQP-0-9-1 or the RabbitMQ-Streams protocol.
 
 === AMQP 0-9-1<amqp_0_9_1>
 
@@ -243,7 +243,7 @@ middleware brokers.
 In the next sections, we will take a brief look at the AMQP
 wire-level format as specified in the AMQP 0-9-1 specification@amqp_0_9_1_spec.
 This is the format that is used to send and receive messages over the network. The short excourse 
-is intended to provide a better understanding of the AMQP 0-9-1 protocol and help evaluating a
+is intended to provide a better understanding of the AMQP 0-9-1 protocol and help evaluate a
 suitable client library in @evaluation
 
 
@@ -320,20 +320,20 @@ align: (center + horizon,  center + horizon),
 [*Type*],
 [*Payload*],
 [Method],
-cellx(fill: (rgb("#F5DEB3")))[```
+cellx(fill: rgb("#F5DEB3"))[```
 0          2           4
 +----------+-----------+-------------- - -
 | class-id | method-id | arguments...
 +----------+-----------+-------------- - -
    short      short    ...```],
-[Header],cellx(fill: (rgb("#F5DEB3")))[```
+[Header],cellx()[```
 0          2        4           12               14
 +----------+--------+-----------+----------------+------------- - -
 | class-id | weight | body size | property flags | property list...
 +----------+--------+-----------+----------------+------------- - -
    short     short    long long      short           remainder...
 ```],
-[Body],cellx(fill: (rgb("#F5DEB3")))[```
+[Body],cellx(fill: rgb("#F5DEB3"))[```
 +-----------------------+ +-----------+
 | Opaque binary payload | | frame-end |
 +-----------------------+ +-----------+
@@ -345,14 +345,14 @@ kind: table,
 caption: [AMQP frame payloads],
  )
 
-This is general overview of the AMQP 0-9-1 protocol. For more details, see the AMQP 0-9-1 specification#footnote([https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf]).
-AMQP-0-9-1 does not have first class support for streaming queues but streams can be implement using optional 'queue and consumer arguments'#footnote([https://www.rabbitmq.com/queues.html#optional-arguments]).
+This is a general overview of the AMQP 0-9-1 protocol. For more details, see the AMQP 0-9-1 specification#footnote([https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf]).
+AMQP-0-9-1 does not have first-class support for streaming queues but streams can be implemented using optional 'queue and consumer arguments'#footnote([https://www.rabbitmq.com/queues.html#optional-arguments]).
 
 === RabbitMQ Streams Protocol
 
 The RabbitMQ Streams protocol is a new messaging protocol that is designed to be 
-used with RabbitMQ Streams@rabbitmq_stream_spec. Its still in development and subject to change.
-Similar as in @amqp_0_9_1, we take a short tour through the protocol to get a better understanding of the protocol.
+used with RabbitMQ Streams@rabbitmq_stream_spec. It's still in development and subject to change.
+Similar to in @amqp_0_9_1, we take a short tour through the protocol to get a better understanding of the protocol.
 For a more detailed and complete description, see the RabbitMQ Streams Protocol specification#footnote([https://github.com/rabbitmq/rabbitmq-server/blob/v3.12.x/deps/rabbitmq_stream/docs/PROTOCOL.adoc]).
 
 ==== Types 
@@ -378,18 +378,98 @@ align: (center + horizon,  center + horizon),
 
 ==== Frame Format 
 
+Each frame is only composed of the size and the payload. The size is a 32-bit unsigned integer denoting the length of the payload in bytes.
+
 #figure(
 rect(
 ```
-+------+---------+
-| Size | Payload |
-+------+---------+
-  int32  bytes
+0      4               size+4
++------+---------------+
+| size |    payload    |
++------+---------------+
+ int32    'size' bytes
 ```,
 fill: (rgb("#F5DEB3")),
+),
+kind: auto,
+caption: [RabbitMQ Streams Frame Format],
 )
+
+The payload can be one of the following:
+
+#figure(
+tablex(
+columns: (auto, 1fr),
+rows:(auto),
+align: (center + horizon,  center + horizon),
+[*Type*],
+[*Frame*],
+[Request],
+cellx()[```
+0      2         4               8             size+8
++------+---------+---------------+-------------+
+| key  | version | correlationId |   command   |
++------+---------+---------------+-------------+
+ uint16  uint16      uint32       'size' bytes
+```],
+cellx()[Response],
+cellx(fill: rgb("#F5DEB3"))[```
+0      2         4               8              10
++------+---------+---------------+--------------+
+| key  | version | correlationId | responseCode |
++------+---------+---------------+--------------+
+ uint16  uint16      uint32           uint16
+```],
+[Command],
+cellx()[```
+0      2         4             size+4
++------+---------+-------------+
+| key  | version |   content   |
++------+---------+-------------+
+ uint16  uint16   'size' bytes
+```],
+),
+kind: table,
+caption: [RabbitMQ Streams Frame Types],
 )
 
+The key at the start of the protocol, tells the server what kind of command will follow. 
 
+An example of a 'declarepublisher' request and the corresponding  response would look like this:
 
+*Request*
 
+#figure(
+rect(
+```
+0      2         4               8              9                    9+size
++------+---------+---------------+--------------+--------------------+-------- - - 
+| 0x01 | version | correlationId | publisherId  | publisherReference | stream
++------+---------+---------------+--------------+--------------------+-------- - -
+ uint16  uint16      uint32           uint8         string(max255)     remainder... 
+```,
+fill: (rgb("#F5DEB3")),
+),
+kind: auto,
+caption: [RabbitMQ Streams DeclarePublisherRequest Frame],
+)
+
+*Response*
+
+#figure(
+rect(
+```
+0        2         4               8              10
++--------+---------+---------------+--------------+
+| 0x8001 | version | correlationId | responseCode |
++--------+---------+---------------+--------------+
+ uint16    uint16       uint32           uint16
+```,
+fill: (rgb("#F5DEB3")),
+),
+kind: auto,
+caption: [RabbitMQ Streams DeclarePublisherResponse Frame],
+)
+
+For a complete list of commands, see the RabbitMQ Streams Protocol specification#footnote([https://github.com/rabbitmq/rabbitmq-server/blob/v3.12.x/deps/rabbitmq_stream/docs/PROTOCOL.adoc#commands]).
+#pagebreak()
