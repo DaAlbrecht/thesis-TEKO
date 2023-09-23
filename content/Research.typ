@@ -181,7 +181,62 @@ influence the order in which consumers perceive messages.
 
 === Streams
 
-=== Comparasion Queues vs Streams
+Streams@rabbitmq_about_streams are a new type of queue in the RabbitMQ ecosystem. Streams are a persistent and replicated data structure.
+With the addition of streams, a new protocol was introduced, the RabbitMQ Streams protocol@rabbitmq_stream_spec.
+
+Streams represent an immutable record of messages, allowing for multiple
+readings until they expire. These streams maintain persistence and
+replication consistently. 
+
+When it comes to accessing messages within a RabbitMQ stream, one or more
+consumers can subscribe to it and read the messages repeatedly, as many times as
+needed.
+
+The ability to read messages repeatedly is a significant advantage of streams
+and what will be taken advantage of in the microservice.
+
+==== Use Cases of streams
+
+#figure(
+tablex(
+columns: (auto, 1fr),
+rows:(auto),
+align: (center + horizon,  left),
+[*Use Case*],
+[*Description*],
+[Large fan-outs],
+[Currently, when users aim to send a message to several subscribers, they must
+create a unique queue for each consumer. This process can become inefficient,
+particularly with a large number of consumers, especially when considering the
+desire for message persistence and replication.
+
+Streams will address this issue by enabling any number of consumers to access
+the same messages from a single queue without causing any data loss. This
+eliminates the necessity to establish multiple queues. Additionally, stream
+consumers will have the capability to read from replicas, distributing the read
+workload throughout the cluster.],
+[Replay (Time-travelling)],
+[Since all existing queue types in RabbitMQ operate with a consume behavior that
+results in message removal from the queue once a consumer finishes processing
+them, it's currently impossible to re-access messages that have already been
+consumed.
+
+Streams, however, will introduce a significant change by permitting consumers to
+connect at any position within the message log and retrieve messages from that
+point onward. This means that messages can be revisited and processed again as
+needed.],
+[Throughput Performance],
+[Streams will provide a significant performance boost over the existing queue 
+types.],
+[Large backlogs],
+[Most queues are designed to operate on an empty backlog. When a queue has a 
+large backlog, it can cause performance issues. Streams will be able to handle
+large backlogs without performance issues.],
+),
+kind: table,
+caption: [Streams Use Cases],
+)
+
 
 #pagebreak()
 
@@ -346,7 +401,7 @@ caption: [AMQP frame payloads],
  )
 
 This is a general overview of the AMQP 0-9-1 protocol. For more details, see the AMQP 0-9-1 specification#footnote([https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf]).
-AMQP-0-9-1 does not have first-class support for streaming queues but streams can be implemented using optional 'queue and consumer arguments'#footnote([https://www.rabbitmq.com/queues.html#optional-arguments]).
+AMQP-0-9-1 does not have first-class support for streaming queues but streams can be implemented using optional 'queue and consumer arguments' #footnote([https://www.rabbitmq.com/queues.html#optional-arguments]).
 
 === RabbitMQ Streams Protocol
 

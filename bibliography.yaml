@@ -39,3 +39,8 @@ rabbitmq_stream_spec:
   type: Web 
   date: 2023-09-21
   url: https://github.com/rabbitmq/rabbitmq-server/blob/v3.12.x/deps/rabbitmq_stream/docs/PROTOCOL.adoc
+
+rabbitmq_about_streams:
+  type: Web 
+  date: 2023-09-22
+  url: https://www.rabbitmq.com/streams.html#overview
