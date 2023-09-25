@@ -1,4 +1,5 @@
 #import "@preview/tablex:0.0.5": tablex, cellx
+#import "@preview/codelst:1.0.0": sourcecode
 
 The following Stakeholders are identified:
 
@@ -277,6 +278,7 @@ the following table.
 The microservice needs to have the following API specification
 
 #figure(
+sourcecode()[
 ```yaml 
 openapi: 3.0.1
 info:
@@ -319,12 +321,12 @@ paths:
                 properties:
                   error:
                     type: string
-    ```,
+    ```],
     caption: [OpenAPI specification, get endpoint],
     )
 #pagebreak()
 #figure(
-    ```yaml
+   sourcecode(numbers-start: 42)[ ```yaml
     post:
       summary: Submit timestamps, a transaction ID, and a queue for replay.
       requestBody:
@@ -366,7 +368,7 @@ paths:
                 properties:
                   error:
                     type: string
-```,
+```],
 kind: auto,
 caption: [OpenAPI specification, post endpoint],
 )

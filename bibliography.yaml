@@ -44,3 +44,9 @@ rabbitmq_about_streams:
   type: Web 
   date: 2023-09-22
   url: https://www.rabbitmq.com/streams.html#overview
+
+x-stream-offset:
+  type: Web 
+  date: 2023-09-25
+  url: https://www.rabbitmq.com/streams.html#consuming
+
