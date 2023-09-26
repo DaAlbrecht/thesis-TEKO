@@ -202,6 +202,34 @@ The `queue_declare` functions takes additional arguments with the type
 These additional arguments are used to specify the optional queue and consumer
 arguments needed for RabbitMQ streams.
 
+#figure(
+sourcecode()[```rs
+pub fn stream_declare_args() -> FieldTable {
+    let mut queue_args = FieldTable::default();
+    queue_args.insert(
+        ShortString::from("x-queue-type"),
+        AMQPValue::LongString("stream".into()),
+    );
+    queue_args.insert(
+        ShortString::from("x-max-length-bytes"),
+        AMQPValue::LongLongInt(600000000),
+    );
+    queue_args.insert(
+        ShortString::from("x-stream-max-segment-size-bytes"),
+        AMQPValue::LongLongInt(500000000),
+    );
+    queue_args
+}
+```],
+caption: "lapin queue arguments",
+)
+
+Mainly the `x-queue-type` argument is used to specify the queue as a stream
+queue. The `x-max-length-bytes` argument is used to specify the maximum size of
+the queue in bytes. The `x-stream-max-segment-size-bytes` argument is used to
+specify the maximum size of a segment in bytes.
+
+
 After the queue is created, a new thread is spawned, which is used to  consuming messages from the queue.
 
 #figure(
@@ -286,6 +314,76 @@ caption: "lapin publish message",
 This publishes a message to the exchange `baz_exchange` with the routing key `baz_exchange`. The payload of the message is `Hello world!`.
 
 === Java - rabbitmq-java-client 
+
+Similar to Lapin, first a connection to the RabbitMQ server is established.
+
+#figure(
+sourcecode()[```java 
+ConnectionFactory factory = new ConnectionFactory();
+factory.setUri("amqp://guest:guest@127.0.0.1:5672");
+Connection conn = factory.newConnection();
+System.out.println("Connection established");
+``` 
+],
+caption: "rabbitmq-java-client connection",
+)
+
+After the connection is established, a new thread is spawned, which is used to
+consuming messages from the queue. This thread gets its own channel.
+
+#figure(sourcecode()[```java
+new Thread(() -> {
+    try {
+        Channel channel = conn.createChannel();
+
+        channel.exchangeDeclare(exchangeName, "direct", true);
+        System.out.println("Exchange declared");
+        channel.queueDeclare(
+                "java-stream",
+                true, // durable
+                false, false, // not exclusive, not auto-delete
+                Collections.singletonMap("x-queue-type", "stream"));
+        channel.queueBind("java-stream", exchangeName, exchangeName);
+
+        channel.basicQos(100); // QoS must be specified
+        channel.basicConsume(
+                "java-stream",
+                false,
+                Collections.singletonMap("x-stream-offset", "first"), // "first" offset specification
+                (consumerTag, message) -> {
+                    System.out.println("Received message: " + new String(message.getBody(), "UTF-8"));
+                    channel.basicAck(message.getEnvelope().getDeliveryTag(), false); // ack is required
+                },
+                consumerTag -> {
+                });
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}).start();
+```], caption: "rabbitmq-java-client consume messages")
+
+In the same way as with lapin, the queue is declared as a stream queue with the
+`x-queue-type` argument. The only difference between the two clients is that
+lapin returns an iterator over the messages, while rabbitmq-java-client uses a
+callback function to consume messages. Otherwise, the two clients are very
+similar.
+
+#linebreak()
+
+In the main thread, a new channel is created, which is used to publish messages to the queue.
+
+#figure(
+sourcecode()[```java 
+while (true) {
+    byte[] messageBodyBytes = "Hello, world!".getBytes();
+    channel_b.basicPublish(exchangeName, exchangeName, null, messageBodyBytes);
+    System.out.println("Sent message: " + new String(messageBodyBytes, "UTF-8"));
+}
+```],
+caption: "rabbitmq-java-client publish message",
+)
+
+The Publishing of messages is as well very similar to lapin.
 
 === Go - amqp091-go
 
