@@ -1,3 +1,6 @@
 assignment/
 *.pdf
 personal/
+code_examples/lapin_test/target/ 
+code_examples/rabbitmq-java-client/target/ 
+code_examples/rabbitmq-java-client/.settings/
