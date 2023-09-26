@@ -73,8 +73,6 @@ are the default credentials for RabbitMQ.
 
 With the following code snippets a connection to the RabbitMQ server is established.
 
-*Main function*
-
 #figure(
 sourcecode()[```rs
 #[tokio::main]
@@ -91,7 +89,8 @@ async fn main() -> Result<()> {
     caption: "lapin connection main", 
 )
 
-*Function to create a connection*
+The process of establishing a connection is a bit more complicated compared to other languages due to the asynchronous nature of Rust.
+To make the code more idiomatic, the connection is established in a separate function.
 
 #figure(
 sourcecode()[```rs
@@ -118,8 +117,6 @@ pub async fn create_rmq_connection(connection_string: String, connection_name: S
 ```],
 caption: "lapin connection",
 )
-
-*Breakdown*
 
 Rust does not have a built in asynchronous runtime. Instead, it relies on
 external asynchronous runtimes. lapin supports several different asynchronous
@@ -313,7 +310,28 @@ caption: "lapin publish message",
 
 This publishes a message to the exchange `baz_exchange` with the routing key `baz_exchange`. The payload of the message is `Hello world!`.
 
-=== Java - rabbitmq-java-client 
+=== Java - rabbitmq-java-client
+
+TODO: add short introduction
+
+
+
+==== Installation 
+
+The rabbitmq-java-client is available on maven central. It can be installed by adding the following dependency to the pom.xml file.
+
+#figure(
+sourcecode(numbering: none)[```xml 
+<dependency>
+    <groupId>com.rabbitmq</groupId>
+    <artifactId>amqp-client</artifactId>
+    <version>5.18.0</version>
+</dependency>
+```],
+caption: "rabbitmq-java-client installation",
+)
+
+==== API usage 
 
 Similar to Lapin, first a connection to the RabbitMQ server is established.
 
