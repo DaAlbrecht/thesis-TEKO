@@ -405,6 +405,91 @@ The Publishing of messages is as well very similar to lapin.
 
 === Go - amqp091-go
 
+==== Installation 
+
+The amqp091-go client library is available on github. It can be installed with the following command:
+
+#figure(
+sourcecode(numbering: none)[```bash 
+go get https://github.com/rabbitmq/amqp091-go```],
+caption: "amqp091-go installation",
+)
+
+The library changed its name from `streadway/amqp` to `rabbitmq/amqp091-go`. To reduce friction with the api documentation and examples, an alias is advised.
+
+#figure(
+sourcecode(numbering: none)[```go
+amqp "github.com/rabbitmq/amqp091-go"```],
+caption: "amqp091-go alias",
+)
+
+==== API usage
+
+Similar to the other clients, first a connection to the RabbitMQ server is established.
+
+#figure(
+sourcecode()[```go 
+connectionString := "amqp://guest:guest@localhost:5672/"
+connection, _ := amqp.Dial(connectionString)
+```],
+caption: "amqp091-go connection",
+)
+
+After the connection is established, a channel is created and used to declare an exchange aswell as a queue.
+
+#figure(
+sourcecode()[```go 
+channel, _ := connection.Channel()
+channel.ExchangeDeclare("golang-exchange", "direct", true, false, false, false, nil)
+
+Queueargs := make(amqp.Table)
+Queueargs["x-queue-type"] = "stream"
+channel.QueueDeclare("golang-queue", true, false, false, false, Queueargs)
+channel.QueueBind("golang-queue", "golang-exchange", "golang-exchange", false, nil)
+```],
+caption: "amqp091-go exchange and queue declaration",
+)
+
+After the queue is declared, a new thread is spawned, which is used to consuming messages from the queue.
+
+#figure(
+sourcecode()[```go 
+args := make(amqp.Table)
+args["x-stream-offset"] = "first"
+channel.Qos(100, 0, false)
+
+go func() {
+        stream, err := channel.Consume("golang-queue", "", false, false, false, false, args)
+        if err != nil {
+                panic(err)
+        }
+        for message := range stream {
+                println(string(message.Body))
+        }
+}()
+```],
+caption: "amqp091-go consume messages",
+)
+
+On the main thread, a new channel is created, which is used to publish messages to the queue.
+
+#figure(
+sourcecode()[```go 
+channel_b, _ := connection.Channel()
+
+for {
+        channel_b.Publish("golang-exchange", "golang-exchange", false, false, amqp.Publishing{
+                Body: []byte("Hello World"),
+        })
+        time.Sleep(100 * time.Millisecond)
+        println("Message sent")
+}
+```],
+caption: "amqp091-go publish messages",
+)
+
+This is very similar to the other clients.
+
 === Evaluation matrix
 
 #figure(
