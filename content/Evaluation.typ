@@ -1,6 +1,8 @@
 #import "@preview/tablex:0.0.5": tablex, cellx
 #import "@preview/codelst:1.0.0": sourcecode
 
+== API Library
+
 To interact with RabbitMQ streams, a client library is needed.
 There are two different types of client libraries
 
@@ -10,11 +12,11 @@ There are two different types of client libraries
 Since the streaming protocol is still subject to change, and the microservice is
 not acting as a high throughput consumer or publisher the extra speed, gained
 with the streaming protocol is not needed. Additionally, after a brief
-exploration the documentation and examples for the streaming protocol appeared
+exploration of the documentation and examples for the streaming protocol appeared
 to be less well-maintained compared to the AMQP 0.9.1 client libraries, leading
 to encounters with broken code snippets and API changes.
 
-As a result, I decided to exclude the RabbitMQ streams client libraries from
+As a result, I decided to exclude the RabbitMQ stream client libraries from
 consideration and instead concentrate on evaluating the AMQP 0.9.1 client
 libraries, which offer support for optional queue and consumer arguments.
 
@@ -22,9 +24,9 @@ To evaluate the AMQP 0.9.1 client libraries, I created a simple publisher and
 consumer application, which publishes a message to a queue and then consumes it.
 This simple demo application was then used to evaluate the client libraries.
 
-*Setup*<setup>
+*Setup*<api-lib-setup>
 
-For this application i used RabbitMQ deployed as a docker container. RabbitMQ 
+For this application, I used RabbitMQ deployed as a docker container. RabbitMQ 
 can be deployed with the following command:
 #figure(
 sourcecode(numbering: none)[```bash 
@@ -71,7 +73,7 @@ First the clients needs to establish a connection to the RabbitMQ server.
 The server is running on localhost and the default port 5672. The credentials
 are the default credentials for RabbitMQ.
 
-With the following code snippets a connection to the RabbitMQ server is established.
+With the following code snippets, a connection to the RabbitMQ server is established.
 
 #figure(
 sourcecode()[```rs
@@ -118,7 +120,7 @@ pub async fn create_rmq_connection(connection_string: String, connection_name: S
 caption: "lapin connection",
 )
 
-Rust does not have a built in asynchronous runtime. Instead, it relies on
+Rust does not have a built-in asynchronous runtime. Instead, it relies on
 external asynchronous runtimes. lapin supports several different asynchronous
 runtimes. This makes it a bit more complicated to establish a connection compared
 to other languages, where the asynchronous runtime is built into the language.
@@ -192,7 +194,7 @@ channel
 caption: "lapin queue declaration",
 )
 
-The `queue_declare` functions takes additional arguments with the type
+The `queue_declare` function takes additional arguments with the type
 `FieldTable`#footnote(
   [https://docs.rs/amq-protocol-types/7.1.2/amq_protocol_types/struct.FieldTable.html],
 ).
@@ -227,7 +229,7 @@ the queue in bytes. The `x-stream-max-segment-size-bytes` argument is used to
 specify the maximum size of a segment in bytes.
 
 
-After the queue is created, a new thread is spawned, which is used to  consuming messages from the queue.
+After the queue is created, a new thread is spawned, which is used to consume messages from the queue.
 
 #figure(
 sourcecode()[```rs
@@ -269,7 +271,7 @@ caption: "lapin consume messages",
 the `basic_consume` function also takes additional arguments with the type `FieldTable`#footnote(
   [https://docs.rs/amq-protocol-types/7.1.2/amq_protocol_types/struct.FieldTable.html],
 ). 
-These arguemnts get created with the `stream_consume_args` function.
+These arguments are created with the `stream_consume_args` function.
 
 #figure(
 sourcecode()[```rs 
@@ -347,7 +349,7 @@ caption: "rabbitmq-java-client connection",
 )
 
 After the connection is established, a new thread is spawned, which is used to
-consuming messages from the queue. This thread gets its own channel.
+consume messages from the queue. This thread gets its own channel.
 
 #figure(sourcecode()[```java
 new Thread(() -> {
@@ -450,7 +452,7 @@ channel.QueueBind("golang-queue", "golang-exchange", "golang-exchange", false, n
 caption: "amqp091-go exchange and queue declaration",
 )
 
-After the queue is declared, a new thread is spawned, which is used to consuming messages from the queue.
+After the queue is declared, a new thread is spawned, which is used to consume messages from the queue.
 
 #figure(
 sourcecode()[```go 
@@ -488,7 +490,9 @@ for {
 caption: "amqp091-go publish messages",
 )
 
-This is very similar to the other clients.
+Overall, the experience with amqp091-go was very similar to the other libraries.
+
+#pagebreak()
 
 === Evaluation matrix
 
@@ -506,61 +510,159 @@ align: (left, center + horizon, left, center + horizon, center + horizon, center
 [Installation],
 [2],
 [Easy and well-documented installation process],
-[x],
-[x],
-[x],
+[2],
+[0],
+[1],
 [API Clarity and Consistency],
 [5],
 [Clear, consistent, and intuitive API design],
-[x],
-[x],
-[x],
+[4],
+[5],
+[4],
 [Documentation],
 [5],
 [Clear, complete, and well-maintained documentation],
-[x],
-[x],
-[x],
+[3],
+[4],
+[3],
 [Community],
 [4],
 [Active and helpful community],
-[x],
-[x],
-[x],
+[4],
+[4],
+[4],
 [language familiarity],
 [5],
 [How familiar I am with the language],
-[x],
-[x],
-[x],
+[5],
+[2],
+[2],
 [Platform Compatibility],
 [4],
 [Support for Unix based systems],
-[x],
-[x],
-[x],
+[4],
+[4],
+[4],
 [Performance],
 [3],
 [Message Throughput],
-[x],
-[x],
-[x],
+[3],
+[3],
+[3],
 [Error Handling],
 [3],
 [Clear and consistent error handling],
-[x],
-[x],
-[x],
+[3],
+[3],
+[3],
 [Licensing Terms],
 [5],
 [Open-source license],
-[x],
-[x],
-[x],
+[5],
+[5],
+[5],
 [Total],
 [36],
 [],
-[],
-[],
+[33],
+[30],
+[29],
 )
 )
+
+The installation process for all three libraries was well documented. With Java,
+the initial setup was not as easy as with the other two. The only annoyance with
+Go was, that the maintainer changed resulting in a new repository. This resulted
+in extra steps. All APIs were clear and consistent. The documentation for all
+three libraries was clear and complete. The community for all three libraries
+was active and helpful. The APIs all implement the same standard and therefore
+are very similar in use and functionality. Furthermore, all three libraries were
+open-source and featured permissive licenses, none of which were copyleft
+licenses. As demonstrated in the examples, their usage and functionality were
+remarkably alike. In the end, it boils down to personal preference and
+familiarity with the language. Since I am most familiar with Rust, I decided to
+use lapin for the microservice.
+
+#pagebreak()
+
+== Architecture 
+
+The microservice is implemented in Rust. Two off-the-shelf libraries are used to 
+implement the microservice. The first library is lapin, which is used to interact
+with RabbitMQ. The second library is axum, which is used to implement the webserver.
+
+#figure(
+image("../assets/microservice_components.svg"),
+caption: "Microservice Architecture",
+kind: image,
+)
+
+The central component of the microservice is the replay component. The replay logic
+implements the use cases described in @Use_cases.
+
+#pagebreak()
+
+The replay component is split into three use cases.
+#figure(
+image("../assets/replay_components.svg"),
+caption: "Replay Architecture",
+kind: image,
+)
+
+For each use case, a separate sequence diagram is provided.
+
+#pagebreak()
+
+*Get*<replay-get>
+
+A get request with a queue and a timeframe (from, to) is sent to the
+microservice. The replay component creates a new consumer and starts consuming
+messages from the queue. The consumer is stopped after the timeframe is reached.
+
+#figure(
+image("../assets/sequence_diagram_get.svg"),
+caption: "Replay Sequence Diagram Get",
+kind: image,
+)
+
+The consumed messages get aggregated and returned to the client.
+
+#pagebreak()
+
+*Post (timeframe)*<replay-post-timeframe>
+
+A post request with a queue and a timeframe (from, to) is sent to the microservice.
+The replay component creates a new consumer and starts consuming messages from the queue.
+The consumer is stopped after the timeframe is reached. Each consumed message gets 
+published to the same queue.
+
+#figure(
+image("../assets/sequence_diagram_post_timeframe.svg"),
+caption: "Replay Sequence Diagram Post Timeframe",
+kind: image,
+)
+
+The messages that get published to the queue acquire a new transaction ID on publish.
+After all messages are published, a list of transaction IDs is returned to the client.
+
+#pagebreak()
+
+*Post (transaction)*<replay-post-transaction>
+
+A post request with a queue and a single transaction ID is sent to the microservice.
+The replay component creates a new consumer and consumes the message with the given
+transaction ID from the queue.
+
+#figure(
+image("../assets/sequence_diagram_post_transaction.svg"),
+caption: "Replay Sequence Diagram Post Transaction",
+kind: image,
+)
+
+The consumed message gets published again to the same queue but with a new transaction ID.
+The newly created transaction ID is returned to the client.
+
+#pagebreak()
+
+
+

@@ -67,12 +67,7 @@
 
 = Evaluation<evaluation>
 
-== API Library
-
-#include "./content/API_lib.typ"
-
-== Architecture 
-
+#include "./content/Evaluation.typ"
 
 = Implementation
 

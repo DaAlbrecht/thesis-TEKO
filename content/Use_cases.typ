@@ -1,6 +1,7 @@
-Two main use cases exist. 
-- Replay a message based on a header value (Transaction ID)
-- Replay a message based on a given time interval
+Three  main use cases exist. 
+- Replay a message based on a header value (Transaction ID) and  a queue
+- Replay a message based on a given time interval and  a queue 
+- Get messages based on a given time interval and  a queue
 
 #figure(
 image("../assets/use_case_diagram.svg", width: 70%),
