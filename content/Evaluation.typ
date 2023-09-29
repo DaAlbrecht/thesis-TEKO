@@ -24,7 +24,7 @@ To evaluate the AMQP 0.9.1 client libraries, I created a simple publisher and
 consumer application, which publishes a message to a queue and then consumes it.
 This simple demo application was then used to evaluate the client libraries.
 
-*Setup*<api-lib-setup>
+*Setup*
 
 For this application, I used RabbitMQ deployed as a docker container. RabbitMQ 
 can be deployed with the following command:
@@ -33,7 +33,7 @@ sourcecode(numbering: none)[```bash
 docker run -it --rm --name rabbitmq -p 5552:5552 -p 5672:5672 -p 15672:15672 rabbitmq:3.12-management
 ```],
 caption: "RabbitMQ as docker container",
-)
+)<api-lib-setup>
 
 The RabbitMQ management interface can be accessed at #link("http://localhost:15672/") with
 the following credentials: 
@@ -663,6 +663,3 @@ The consumed message gets published again to the same queue but with a new trans
 The newly created transaction ID is returned to the client.
 
 #pagebreak()
-
-
-

@@ -33,6 +33,10 @@
   [Transmission Control Protocol],
   [FIFO],
   [First In First Out],
+  [CI],
+  [Continuous Integration],
+  [CD],
+  [Continuous Delivery],
 ), kind: table, caption: "Glossary")<glossary>
 
 #pagebreak()
@@ -71,7 +75,11 @@
 
 = Implementation
 
+#include "./content/Implementation.typ"
+
 = Verification
+
+= Configuration management
 
 = Conclusion
 
