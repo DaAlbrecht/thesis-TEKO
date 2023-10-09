@@ -585,7 +585,7 @@ use lapin for the microservice.
 
 #pagebreak()
 
-== Architecture 
+== Architecture<architecture>
 
 The microservice is implemented in Rust. Two off-the-shelf libraries are used to 
 implement the microservice. The first library is lapin, which is used to interact

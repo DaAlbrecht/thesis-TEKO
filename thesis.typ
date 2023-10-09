@@ -4,6 +4,7 @@
 
 #show figure.where(kind: "appendix"): it => it.body
 #let appendix = figure.with(kind: "appendix", numbering: "A", supplement: [Appendix])
+#show link: underline
 
 
 #show: project.with(
@@ -37,6 +38,8 @@
   [Continuous Integration],
   [CD],
   [Continuous Delivery],
+  [iff],
+  [if and only if],
 ), kind: table, caption: "Glossary")<glossary>
 
 #pagebreak()

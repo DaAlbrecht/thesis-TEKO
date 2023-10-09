@@ -44,9 +44,11 @@ rabbitmq_about_streams:
   type: Web 
   date: 2023-09-22
   url: https://www.rabbitmq.com/streams.html#overview
-
 x-stream-offset:
   type: Web 
   date: 2023-09-25
   url: https://www.rabbitmq.com/streams.html#consuming
-
+docrs_into_response:
+  type: Web 
+  date: 2023-10-09
+  url: https://docs.rs/axum/0.6.20/axum/response/trait.IntoResponse.html#foreign-impls 

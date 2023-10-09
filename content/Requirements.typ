@@ -273,7 +273,7 @@ the following table.
 
 #pagebreak()
 
-=== OpenAPI specification
+=== OpenAPI specification<openapi_specification>
 
 The microservice needs to have the following API specification
 
