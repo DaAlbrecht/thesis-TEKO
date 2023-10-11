@@ -69,8 +69,8 @@ caption: "tokio installation",
 
 ==== API usage 
 
-First the clients needs to establish a connection to the RabbitMQ server.
-The server is running on localhost and the default port 5672. The credentials
+First, the clients need to establish a connection to the RabbitMQ server.
+The server is running on localhost and the default port is 5672. The credentials
 are the default credentials for RabbitMQ.
 
 With the following code snippets, a connection to the RabbitMQ server is established.
@@ -403,13 +403,13 @@ while (true) {
 caption: "rabbitmq-java-client publish message",
 )
 
-The Publishing of messages is as well very similar to lapin.
+The Publishing of messages is also very similar to lapin.
 
 === Go - amqp091-go
 
 ==== Installation 
 
-The amqp091-go client library is available on github. It can be installed with the following command:
+The amqp091-go client library is available on GitHub. It can be installed with the following command:
 
 #figure(
 sourcecode(numbering: none)[```bash 
@@ -437,7 +437,7 @@ connection, _ := amqp.Dial(connectionString)
 caption: "amqp091-go connection",
 )
 
-After the connection is established, a channel is created and used to declare an exchange aswell as a queue.
+After the connection is established, a channel is created and used to declare an exchange as well as a queue.
 
 #figure(
 sourcecode()[```go 
