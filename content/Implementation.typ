@@ -1194,7 +1194,7 @@ pub struct Message {
 }
 ```],
 caption: [Message]
-)
+)<Message_struct>
 
 Each message in a stream has an offset. The offset is used to identify the
 `x-stream-offset` header. The offset is optional on the `Message` struct because
@@ -2031,12 +2031,250 @@ This results in the following matrix.
   )<is_within_timeframe_matrix>
 
 === publish_message<heading_publish_message>
+
+The `publish_message` function is used to publish messages that should be
+replayed to the queue again. 
+
 #figure(
   sourcecode()[```rs
-  //placeholder
+pub async fn publish_message(
+  pool: &deadpool_lapin::Pool,
+  message_options: &MessageOptions,
+  messages: Vec<Delivery>,
+) -> Result<Vec<Message>> {
+  let connection = pool.get().await?;
+  let channel = connection.create_channel().await?;
+  let mut s = stream::iter(messages);
+  let mut replayed_messages = Vec::new();
+
+  while let Some(message) = s.next().await {
+      let mut transaction: Option<TransactionHeader> = None;
+      let mut timestamp: Option<chrono::DateTime<chrono::Utc>> = None;
+      let basic_props = match (
+          message_options.enable_timestamp,
+          message_options.transaction_header.clone(),
+      ) {
+          (true, None) => {
+              timestamp = Some(chrono::Utc::now());
+              let timestamp_u64 = timestamp.unwrap().timestamp_millis() as u64;
+              lapin::BasicProperties::default().with_timestamp(timestamp_u64)
+          }
+          (true, Some(transaction_header)) => {
+              timestamp = Some(chrono::Utc::now());
+              let timestamp_u64 = timestamp.unwrap().timestamp_millis() as u64;
+              let uuid = uuid::Uuid::new_v4().to_string();
+              let mut headers = FieldTable::default();
+              headers.insert(
+                  ShortString::from(transaction_header.as_str()),
+                  AMQPValue::LongString(uuid.as_str().into()),
+              );
+              transaction = TransactionHeader::from_fieldtable(
+                  headers.clone(),
+                  transaction_header.as_str(),
+              )
+              .ok();
+              lapin::BasicProperties::default()
+                  .with_headers(headers)
+                  .with_timestamp(timestamp_u64)
+          }
+          (false, None) => lapin::BasicProperties::default(),
+          (false, Some(transaction_header)) => {
+              let uuid = uuid::Uuid::new_v4().to_string();
+              let mut headers = FieldTable::default();
+              headers.insert(
+                  ShortString::from(transaction_header.as_str()),
+                  AMQPValue::LongString(uuid.as_str().into()),
+              );
+              transaction = TransactionHeader::from_fieldtable(
+                  headers.clone(),
+                  transaction_header.as_str(),
+              )
+              .ok();
+              lapin::BasicProperties::default().with_headers(headers)
+          }
+      };
+
+      channel
+          .basic_publish(
+              message.exchange.as_str(),
+              message.routing_key.as_str(),
+              lapin::options::BasicPublishOptions::default(),
+              message.data.as_slice(),
+              basic_props,
+          )
+          .await?;
+
+      replayed_messages.push(Message {
+          offset: None,
+          transaction,
+          timestamp,
+          data: String::from_utf8(message.data)?,
+      });
+  }
+  Ok(replayed_messages)
+}
 ```],
 caption: [publish_message]
 )<publish_message>
+
+The function takes three arguments. The first argument is a reference to the 
+connection pool. The second argument is a reference to the `MessageOptions`
+struct. The third argument is a vector of `Delivery` structs.
+
+#figure(
+  sourcecode()[```rs
+pub async fn publish_message(
+    pool: &deadpool_lapin::Pool,
+    message_options: &MessageOptions,
+    messages: Vec<Delivery>,
+) -> Result<Vec<Message>> {
+```],
+caption: [publish_message function signature]
+)
+
+The function returns a `Result<Vec<Message>>`. The `Message` struct is defined
+in @Message_struct.
+#linebreak()
+
+The function starts by establishing a connection to the amqp server. A channel
+is created and a stream#footnote("https://rust-lang.github.io/async-book/05_streams/01_chapter.html")
+is created from the `messages` vector. A stream in rust is an asynchronous
+iterator. The `next` method is called on the stream to iterate over the messages
+in the `messages` vector. A new vector called `replayed_messages` is created.
+The `replayed_messages` vector is used to store the messages that should be
+returned from the function to the client.
+
+#figure(
+  sourcecode()[```rs
+let connection = pool.get().await?;
+let channel = connection.create_channel().await?;
+let mut s = stream::iter(messages);
+let mut replayed_messages = Vec::new();
+while let Some(message) = s.next().await {
+```],
+caption: [create channel and stream]
+)
+
+As shown in @MessageOptions the microservice supports 
+adding a custom transaction header or a timestamp to a message.
+Both of these features are optional thus resulting in the following matrix.
+
+
+#figure(
+  tablex(
+    columns: (auto, auto, 1fr),
+    rows: (auto),
+    align: (center + horizon, center + horizon, left),
+    [*enable_timestamp*],
+    [*transaction_header*],
+    [*result*],
+    [true],
+    [None],
+    [timestamp is added to message],
+    [true],
+    [Some],
+    [timestamp and transaction header is added to message],
+    [false],
+    [Some],
+    [transaction header is added to message],
+    [false],
+    [None],
+    [no timestamp or transaction header is added to message],
+    ),
+    kind: table,
+    caption: [publish options matrix]
+  )<publish_options_matrix>
+
+To represent the matrix in code, the `enable_timestamp` and `transaction_header`
+field are matched as tuples.
+
+#figure(
+  sourcecode()[```rs
+        let basic_props = match (
+            message_options.enable_timestamp,
+            message_options.transaction_header.clone(),
+        ) {
+            (true, None) => {
+                timestamp = Some(chrono::Utc::now());
+                let timestamp_u64 = timestamp.unwrap().timestamp_millis() as u64;
+                lapin::BasicProperties::default().with_timestamp(timestamp_u64)
+            }
+            (true, Some(transaction_header)) => {
+                timestamp = Some(chrono::Utc::now());
+                let timestamp_u64 = timestamp.unwrap().timestamp_millis() as u64;
+                let uuid = uuid::Uuid::new_v4().to_string();
+                let mut headers = FieldTable::default();
+                headers.insert(
+                    ShortString::from(transaction_header.as_str()),
+                    AMQPValue::LongString(uuid.as_str().into()),
+                );
+                transaction = TransactionHeader::from_fieldtable(
+                    headers.clone(),
+                    transaction_header.as_str(),
+                )
+                .ok();
+                lapin::BasicProperties::default()
+                    .with_headers(headers)
+                    .with_timestamp(timestamp_u64)
+            }
+            (false, None) => lapin::BasicProperties::default(),
+            (false, Some(transaction_header)) => {
+                let uuid = uuid::Uuid::new_v4().to_string();
+                let mut headers = FieldTable::default();
+                headers.insert(
+                    ShortString::from(transaction_header.as_str()),
+                    AMQPValue::LongString(uuid.as_str().into()),
+                );
+                transaction = TransactionHeader::from_fieldtable(
+                    headers.clone(),
+                    transaction_header.as_str(),
+                )
+                .ok();
+                lapin::BasicProperties::default().with_headers(headers)
+            }
+        };
+```],
+caption: [match publish options]
+)
+
+Each match arm sets the needed amqp properties and headers according to the 
+matrix shown in @publish_options_matrix.
+#linebreak()
+  
+After the needed properties are set, the `basic_publish` method is called on the 
+channel. The routing key, exchange and data are taken from message.
+The same message is pushed to the `replayed_messages` vector.
+
+#figure(
+  sourcecode()[```rs
+channel
+    .basic_publish(
+        message.exchange.as_str(),
+        message.routing_key.as_str(),
+        lapin::options::BasicPublishOptions::default(),
+        message.data.as_slice(),
+        basic_props,
+    )
+    .await?;
+
+replayed_messages.push(Message {
+    offset: None,
+    transaction,
+    timestamp,
+    data: String::from_utf8(message.data)?,
+});
+    ```],
+caption: [publish  messages again]
+)
+
+The `replayed_messages` vector is returned from the `publish_message` function.
+
+#figure(
+  sourcecode()[```rs
+Ok(replayed_messages)
+```],
+caption: [return replayed messages]
+)
 
 === get_queue_message_count<heading_get_queue_message_count>
 
