@@ -2411,8 +2411,86 @@ match message_count {
 ```],
 caption: [return number of messages in queue]
 )
-
+#pagebreak()
 == Container
+
+The microservice is packaged as a container using Docker as the container 
+runtime. 
+
+#figure(
+  sourcecode()[```Dockerfile
+  # Build Stage 
+FROM rust:1.73.0-slim-buster as builder
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN USER=root cargo new --bin rabbit-revival
+WORKDIR ./rabbit-revival
+COPY ./Cargo.toml ./Cargo.toml
+
+# Build empty app with downloaded dependencies to produce a stable image layer for next build
+RUN cargo build --release
+
+# Build web app with own code
+RUN rm src/*.rs
+ADD . ./
+RUN rm ./target/release/deps/rabbit_revival*
+RUN cargo build --release
+
+FROM debian:buster-slim
+ARG APP=/usr/src/app
+
+RUN apt-get update && apt-get install libssl1.1 -y && rm -rf /var/lib/apt/lists/*
+
+EXPOSE 3000
+
+ENV TZ=Etc/UTC \
+    APP_USER=appuser
+
+RUN groupadd $APP_USER \
+    && useradd -g $APP_USER $APP_USER \
+    && mkdir -p ${APP}
+
+COPY --from=builder /rabbit-revival/target/release/rabbit-revival ${APP}/rabbit-revival
+
+RUN chown -R $APP_USER:$APP_USER ${APP}
+
+USER $APP_USER
+WORKDIR ${APP}
+
+CMD ["./rabbit-revival"]
+```],
+caption: [Dockerfile]
+)
+
+The Dockerfile starts by using the official `rust:1.73.0-slim-buster` image as the base 
+image. The `rust:1.73.0-slim-buster` image is based on the `debian:buster-slim` image.
+The Dockerfile takes advantage of the layer caching mechanism of Docker. Docker can 
+reuse layers from previous builds if the layers did not change. To use this efficiently,
+the `Cargo.toml` file is copied to the image and the dependencies are downloaded.
+After the dependencies are downloaded the microservice is built. With this approach,
+the dependencies are only downloaded again if the `Cargo.toml` file changes.
+#linebreak()
+The needed dependencies for building the microservice are installed and the
+binary is built. The binary is built in release mode to optimize the binary for
+size and performance. In the next stage, the `debian:buster-slim` image is used
+as the base image. The needed runtime dependencies are installed. The binary is
+copied from the previous stage. A new user is created and the binary is marked
+as executable for the given user. As entrypoint, the binary is executed.
+#linebreak()
+Debian was chosen because alpine, the otherwise industry standard base image
+does not integrate as easily with rust. alpine is based on musl libc which is
+not compatible with the rust standard library. Therefore the rust standard
+library needs to be compiled with musl libc. 
+This is not a problem per se but
+unnecessary work. Debian is based on glibc which is compatible with rust.
+
+
 
 == CI/CD
 
