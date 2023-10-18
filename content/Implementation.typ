@@ -2491,6 +2491,156 @@ This is not a problem per se but
 unnecessary work. Debian is based on glibc which is compatible with rust.
 
 
+#pagebreak()
 
 == CI/CD
+
+Github actions are used as CI/CD framework. The project has no continuous deployment 
+pipeline because thats for the user of the microservice to decide. The CI part of the 
+pipeline is shown below in @ci_pipeline.
+
+
+#figure(
+  image("./../assets/ci.svg"),
+  caption: [CI pipeline],
+  kind: image
+)<ci_pipeline>
+
+The CI pipeline is triggered on every push to the `master` branch if one of the 
+following paths changed.
+ - src/\*\*
+ - Cargo.toml
+ - Cargo.lock
+
+ #figure(
+   sourcecode()[```yaml
+name: Rust
+
+on:
+  push:
+    paths:
+      - src/**
+      - Cargo.toml
+      - Cargo.lock
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install stable
+      uses: dtolnay/rust-toolchain@stable
+    - name: Run tests
+      run: cargo test --verbose
+ ```],
+   caption: [Automated tests],
+ )
+
+The CI pipeline runs the tests on the latest ubuntu image. First the repository
+is checked out, afterwards the stable rust toolchain is installed.
+Lastly the tests are run using the `cargo test` command.
+#linebreak()
+If one of the tests fails, the pipeline fails. If all tests pass, the pipeline 
+succeeds and the job responsible for building the container is triggered.
+
+#figure(
+  sourcecode()[```yaml
+name: Create and publish a Docker image
+on:
+  workflow_run:
+    workflows: ["Rust"]
+    types:
+      - completed
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}:${{ github.sha }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+```],
+  caption: [Build container],
+)
+
+The container is built using the `docker/build-push-action` action#footnote(
+  "https://docs.github.com/en/actions/publishing-packages/publishing-docker-images",
+). The action is configured to build the container using the `Dockerfile` in the
+root of the repository. The image is tagged using the git commit hash available
+from the predefined environment variables #footnote(
+  "https://docs.github.com/en/actions/reference/environment-variables#default-environment-variables",
+). If the build succeeds, the container is pushed to the Github container
+registry. The Github container registry is used because it is free and
+integrated into Github. No additional authentication is needed to push to the
+Github container registry making it easy to use.
+
+#pagebreak()
+In contrast to the jobs triggered on push, the dependabot job is triggered on a
+schedule. The job is responsible for updating the dependencies of the
+microservice. Dependabot is a service, owned and built into Github #footnote("https://github.com/dependabot").
+
+#figure(
+  image("./../assets/depbot.svg", width: 80%),
+  caption: [Dependabot pipeline],
+  kind: image 
+)<dependabot_pipeline>
+
+#figure(
+  sourcecode()[```yaml
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: daily
+    ignore:
+      - dependency-name: "*"
+        # patch and minor updates don't matter for libraries
+        # remove this ignore rule if your package has binaries
+        update-types:
+          - "version-update:semver-patch"
+          - "version-update:semver-minor"
+```],
+caption: [Dependabot configuration],
+)
+
+Dependabot is configured to check for updates daily. The job is configured to
+ignore patch and minor updates. If a new major version of a dependency is
+released, a pull request is crated. The pull request needs to be merged 
+by a maintainer.
+#pagebreak()
+
+
+
+
 
