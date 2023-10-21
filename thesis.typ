@@ -10,7 +10,7 @@
 #show: project.with(
   title: "Microservice for messaging-based replay function",
   authors: ("David",),
-  abstract: lorem(59),
+  abstract: include("./content/Abstract.typ"),
   date: "September 15, 2023",
 )
 
@@ -82,7 +82,11 @@
 
 = Verification
 
+#include "./content/Verification.typ"
+
 = Configuration management
+
+#include "./content/Configuration_management.typ"
 
 = Conclusion
 

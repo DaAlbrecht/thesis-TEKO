@@ -1,5 +1,6 @@
 #import "@preview/tablex:0.0.5": tablex, cellx
 #import "@preview/codelst:1.0.0": sourcecode
+#show figure.where(kind: raw): set block(breakable: true)
 
 The following Stakeholders are identified:
 
@@ -292,14 +293,14 @@ paths:
         - name: from
           in: query
           description: Start timestamp (inclusive).
-          required: true
+          required: false
           schema:
             type: string
             format: date-time
         - name: to
           in: query
           description: End timestamp (exclusive).
-          required: true
+          required: false
           schema:
             type: string
             format: date-time
@@ -312,6 +313,10 @@ paths:
       responses:
         '200':
           description: Successful retrieval of data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
         '500':
           description: Internal server error.
           content:
@@ -321,12 +326,6 @@ paths:
                 properties:
                   error:
                     type: string
-    ```],
-    caption: [OpenAPI specification, get endpoint],
-    )
-#pagebreak()
-#figure(
-   sourcecode(numbers-start: 42)[ ```yaml
     post:
       summary: Submit timestamps, a transaction ID, and a queue for replay.
       requestBody:
@@ -355,6 +354,10 @@ paths:
       responses:
         '201':
           description: Successful replay.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
         '400':
           description: Bad request. Neither timestamps nor transactionId submitted.
         '404':
@@ -368,11 +371,33 @@ paths:
                 properties:
                   error:
                     type: string
-```],
-kind: auto,
-caption: [OpenAPI specification, post endpoint],
-)
 
+components:
+  schemas:
+    TransactionHeader:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+
+    Message:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        transaction:
+          $ref: '#/components/schemas/TransactionHeader' 
+        timestamp:
+          type: string
+          format: date-time
+        data:
+          type: string
+    ```],
+    caption: [OpenAPI specification],
+    )
 #pagebreak()
 
 == System Requirements
@@ -396,7 +421,7 @@ tablex(
   [The microservice needs to be compliant with the OCI specification],
   [REQ-4],
   [STR-4],
-  [The microservice should not use more than 50MB of memory and 0.5 CPU cores when idle],
+  [The microservice should not use more than 500MB of memory and 0.5 CPU cores when idle],
   [REQ-5],
   [STR-5, STR-11],
   [The microservice provides an openapi specification for its API],

@@ -2,8 +2,10 @@
 #import "@preview/codelst:1.0.0": sourcecode
 #show figure.where(kind: raw): set block(breakable: true)
 
-The entire project is available on #link("https://github.com/DaAlbrecht/rabbit-revival/tree/main")[GitHub] and 
-licensed under the MIT license.
+The entire project is available on #link("https://github.com/DaAlbrecht/rabbit-revival/tree/main")[GitHub] and
+licensed under the MIT license. For a clearer understanding and reasoning of the
+design decisions, the code is documented inline with syntax highlighting and a
+short description to each snippet is provided. 
 
 == Prequesites
 

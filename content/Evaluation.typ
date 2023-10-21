@@ -3,7 +3,11 @@
 
 == API Library
 
-To interact with RabbitMQ streams, a client library is needed.
+The microservice needs to interact with RabbitMQ and read from the broker. 
+These interaction happen over the AMQP protocol. To not reinvent the wheel,
+off-the-shelf library of the AMQP protocol should be used.
+#linebreak()
+
 There are two different types of client libraries
 
 - An AMQP 0.9.1 client library that can specify optional queue and consumer arguments#footnote([https://www.rabbitmq.com/streams.html#usage])
@@ -314,10 +318,6 @@ This publishes a message to the exchange `baz_exchange` with the routing key `ba
 
 === Java - rabbitmq-java-client
 
-TODO: add short introduction
-
-
-
 ==== Installation 
 
 The rabbitmq-java-client is available on maven central. It can be installed by adding the following dependency to the pom.xml file.
@@ -496,20 +496,22 @@ Overall, the experience with amqp091-go was very similar to the other libraries.
 
 === Evaluation matrix
 
+  #[
+  #show regex("\w"): it => [#sym.zws;#it]
 #figure(
 tablex(
 columns: (auto, auto, auto, auto,auto,auto),
 rows: (auto),
-align: (left, center + horizon, left, center + horizon, center + horizon, center + horizon),
+align: (left + horizon , center + horizon, left + horizon, center + horizon, center + horizon, center + horizon),
 [*Criteria*],
 [*Weight(1-5)*],
 [*Description*],
 [*lapin*],
-[*rabbitmq-java-client*],
+[*rabbitmq#sym.zws;-java-client*],
 [*amqp091-go*],
 [Installation],
 [2],
-[Easy and well-documented installation process],
+[Easy and documented installation process],
 [2],
 [0],
 [1],
@@ -521,7 +523,7 @@ align: (left, center + horizon, left, center + horizon, center + horizon, center
 [4],
 [Documentation],
 [5],
-[Clear, complete, and well-maintained documentation],
+[Clear,complete and maintained documentation],
 [3],
 [4],
 [3],
@@ -545,7 +547,7 @@ align: (left, center + horizon, left, center + horizon, center + horizon, center
 [4],
 [Performance],
 [3],
-[Message Throughput],
+[Message throughput],
 [3],
 [3],
 [3],
@@ -569,6 +571,7 @@ align: (left, center + horizon, left, center + horizon, center + horizon, center
 [29],
 )
 )
+]
 
 The installation process for all three libraries was well documented. With Java,
 the initial setup was not as easy as with the other two. The only annoyance with
