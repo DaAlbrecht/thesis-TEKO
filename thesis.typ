@@ -1,6 +1,7 @@
 #import "template.typ": *
 #import "metadata.typ": *
 #import "@preview/tablex:0.0.5": tablex, cellx
+#import "personal/Cover.typ" as cover
 
 #show figure.where(kind: "appendix"): it => it.body
 #let appendix = figure.with(kind: "appendix", numbering: "A", supplement: [Appendix])
@@ -9,9 +10,12 @@
 
 #show: project.with(
   title: "Microservice for messaging-based replay function",
-  authors: ("David",),
-  abstract: include("./content/Abstract.typ"),
-  date: "September 15, 2023",
+  authors: (cover.author,),
+  abstract: include("content/Abstract.typ"),
+  date: "October 30, 2023",
+  school: cover.school,
+  degree: cover.degree,
+  class: cover.class,
 )
 
 = Executive summary
@@ -90,9 +94,15 @@
 
 = Conclusion
 
+#include "./personal/Conclusion.typ"
+
 = Closing remarks
 
+#include "./personal/Closing_remarks.typ"
+
 = Acknowledgement
+
+#include "./personal/Acknowledgement.typ"
 
 = Declaration of independence
 

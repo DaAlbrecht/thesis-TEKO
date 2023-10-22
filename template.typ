@@ -1,12 +1,21 @@
 // The project function defines how your document looks.
 // It takes your content and some metadata and formats it.
 // Go ahead and customize it to your liking!
-#let project(title: "", abstract: [], authors: (), date: none, logo: none, body) = {
+#let project(title: "", abstract: [], authors: (), date: none, logo: none, school: "", degree: "", class: "", body) = {
   // Set the document's basic properties.
   set document(author: authors, title: title)
   set page(numbering: "1", number-align: center)
   set text(font: "New Computer Modern", lang: "en")
   set heading(numbering: "1.1")
+
+[
+  #set align(center)
+  #text(school)
+  #linebreak()
+  #text(degree)
+  #linebreak()
+  #text(class)
+]
 
   // Title page.
   // The page can contain a logo if you pass one with `logo: "logo.png"`.
@@ -14,7 +23,7 @@
   if logo != none {
     align(right, image(logo, width: 26%))
   }
-  v(9.6fr)
+  v(3.6fr)
 
   text(1.1em, date)
   v(1.2em, weak: true)
