@@ -20,7 +20,7 @@
 
 = Executive summary
 
-#pagebreak()
+#include "./content/Executive_summary.typ"
 
 = Glossary
 
