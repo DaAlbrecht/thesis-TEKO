@@ -8,29 +8,29 @@ These interaction happen over the AMQP protocol. To not reinvent the wheel,
 off-the-shelf library of the AMQP protocol should be used.
 #linebreak()
 
-There are two different types of client libraries
+There are two different types of client libraries:
 
 - An AMQP 0.9.1 client library that can specify optional queue and consumer arguments#footnote([https://www.rabbitmq.com/streams.html#usage])
 - RabbitMQ streams client libraries that support the new protocol#footnote([https://www.rabbitmq.com/devtools.html])
 
 Since the streaming protocol is still subject to change, and the microservice is
-not acting as a high throughput consumer or publisher the extra speed, gained
-with the streaming protocol is not needed. Additionally, after a brief
-exploration of the documentation and examples for the streaming protocol appeared
-to be less well-maintained compared to the AMQP 0.9.1 client libraries, leading
+not acting as a high throughput consumer or publisher, the extra speed, gained
+with the streaming protocol, is not needed. Additionally, after a first look at
+the documentation and examples provided for the streaming protocol, it appeared
+to be not as actively used compared to the AMQP 0.9.1 client libraries, leading
 to encounters with broken code snippets and API changes.
 
-As a result, I decided to exclude the RabbitMQ stream client libraries from
-consideration and instead concentrate on evaluating the AMQP 0.9.1 client
+As a result, the  RabbitMQ stream client libraries are excluded from
+consideration and instead focused on evaluating the AMQP 0.9.1 client
 libraries, which offer support for optional queue and consumer arguments.
 
-To evaluate the AMQP 0.9.1 client libraries, I created a simple publisher and
-consumer application, which publishes a message to a queue and then consumes it.
+To evaluate the AMQP 0.9.1 client libraries,  a simple publisher and
+consumer application, which publishes a message to a queue and then consumes it is created.
 This simple demo application was then used to evaluate the client libraries.
 
 *Setup*
 
-For this application, I used RabbitMQ deployed as a docker container. RabbitMQ 
+For this application, a RabbitMQ server,  deployed as a docker container is used. RabbitMQ 
 can be deployed with the following command:
 #figure(
 sourcecode(numbering: none)[```bash 
@@ -291,7 +291,7 @@ pub fn stream_consume_args() -> FieldTable {
 caption: "lapin consume arguments",
 )
 
-The `x-stream-offset` argument is used to specify the offset from which the consumer should start consuming messages@x-stream-offset
+The `x-stream-offset` argument is used to specify the offset from which the consumer should start consuming messages@x-stream-offset.
 
 The main thread concurrently publishes a message to the queue, the consumer thread is consuming messages from.
 
@@ -403,7 +403,7 @@ while (true) {
 caption: "rabbitmq-java-client publish message",
 )
 
-The Publishing of messages is also very similar to lapin.
+The publishing of messages is also very similar to lapin.
 
 === Go - amqp091-go
 

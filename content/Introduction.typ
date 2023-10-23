@@ -11,7 +11,7 @@ an error or system anomaly. The visual representation provided below in
 )<append_only_queue>
 
 
-The subsequent @append_only_queue_replay, presented below, visually shows
+The subsequent @append_only_queue_replay, presented below, visually shows the
 desired state, illustrating the incorporation of a mechanism for the message
 replaying.
 

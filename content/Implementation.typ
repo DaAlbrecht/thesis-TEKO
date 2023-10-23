@@ -7,7 +7,7 @@ licensed under the MIT license. For a clearer understanding and reasoning of the
 design decisions, the code is documented inline with syntax highlighting and a
 short description to each snippet is provided. 
 
-== Prequesites
+== Prerequisites
 
 For the development of the replay microservice, the following tools are required:
 
@@ -20,7 +20,7 @@ For the development of the replay microservice, the following tools are required
     [*Description*],
     [*Install*],
     [Rust],
-    [The microservice is written in Rust. The rust toolchain is required to build the microservice.],
+    [The microservice is written in Rust. The Rust toolchain is required to build the microservice.],
     [#link("https://www.rust-lang.org/tools/install")],
     [Docker],
     [The microservice aswell as RabbitMQ are run in docker containers.],
@@ -38,7 +38,7 @@ For the development of the replay microservice, the following tools are required
 
   == Project setup 
 
-  The replay microservice rust project was created, and as a development name the name "rabbit-revival" was chosen. The project is created using the following command:
+  The replay microservice Rust project was created, and as a development name the name "rabbit-revival" was chosen. The project is created using the following command:
 
 #figure(sourcecode(numbering: none)[```bash
   cargo new rabbit-revival
@@ -67,7 +67,7 @@ cargo add anyhow
     [*Name*],
     [*Description*],
     [tokio],
-    [Tokio is an asyncronous runtime],
+    [Tokio is an asynchronous runtime],
     [axum],
     [axum is a web framework created by the tokio team],
     [lapin],
@@ -89,7 +89,7 @@ With the basic project setup done, the first task is to implement the web servic
 
 In order to understand the implementation of the replay microservice, first some basic concepts of axum are explained.
 
-=== Axum concepts
+=== axum concepts
 
 axum uses tower#footnote("https://docs.rs/tower/latest/tower/index.html") under the hood. Tower is a high-level abstraction for
 networking applications. The basic idea is that a trait #footnote("https://doc.rust-lang.org/book/ch10-02-traits.html") called
@@ -107,11 +107,11 @@ pub trait Service<Request> {
 ```],
 caption: [stripped down tower service trait]
 )
-Since a `Service` is generic any middleware that also implements the `Service`
+Since a `Service` is generic, any middleware that also implements the `Service`
 trait can be used allowing axum to use a large ecosystem of middleware.
 
-axum like any other web sever needs to be able to handle multiple requests concurrently, making a webserver
-inhertly asynchronous. 
+axum like any other web sever needs to be able to handle multiple requests concurrently, making a web server
+inherently asynchronous. 
 
   #figure(
   sourcecode()[```rust
@@ -134,7 +134,7 @@ async fn main() {
 
 Rust uses colored functions#footnote(
   "https://journal.stuffwithstuff.com/2015/02/01/what-color-is-your-function/",
-) and therefore functions that call asynchronous functions need to be marked as
+) and therefore, functions that call asynchronous functions need to be marked as
 asynchronous as well. Since rust does not provide an asynchronous runtime it's not
 possible to declare the main entrypoint with the `async` keyword. Tokio uses the
 macro `#[tokio::main]` to allow specifying the main function as asynchronous.#footnote("https://tokio.rs/tokio/tutorial/hello-tokio")
@@ -160,7 +160,7 @@ fn main() {
 
 The main function handles the creation of the axum server and starts the server.
 
-In axum the routing is handled by the `Router` struct. The `Router` matches request paths to rust functions called `Handlers` based on the HTTP method filter.
+In axum, the routing is handled by the `Router` struct. The `Router` matches request paths to rust functions called `Handlers` based on the HTTP method filter.
 
 #figure(
 sourcecode()[```rust
@@ -170,7 +170,7 @@ let app = Router::new()
 caption: [routing]
 )
 
-Afterwards, the Server is bound to a socket address and the server is started
+Afterwards, the server is bound to a socket address and the server is started
 with the `serve` method. The `serve` method consumes an object that can be
 turned into a service and transforms it into a service.
 
@@ -212,7 +212,7 @@ caption: [hello world example]
 )<hello_world_example>
 
 The router is created with a single route that matches the path `/` and the
-method `GET`. If a request is received that matches the route of the HTTP method
+method `GET`. If a request is received that matches the route of the HTTP method,
 the function `print_hello` is called. The function returns a string that is
 converted into a response by axum. The response is then sent to the client.
 
@@ -278,7 +278,7 @@ that can be turned into a `Response`.
 #linebreak()
 
 A `Response` is every type that implements the `IntoResponse` trait. axum implements
-the trait for many common types like `String`, `&str`, `Vec<u8>`, `Json` and many more.
+the trait for many common types like `String`, `&str`, `Vec<u8>`, `Json`, and many more.
 But the real magic of axum is the following:
 
 #figure(
@@ -344,16 +344,16 @@ the `Serialize` trait for the `User` struct. Deriving in that sense means that
 the trait gets automatically implemented for the struct.
 
 The important part is that as stated earlier, a handler returns something that
-can be turned into a `Response`. We can use this fact and instead of returning a concrete
+can be turned into a `Response`. We can use this fact and, instead of returning a concrete
 type like `String` or `&str` we can tell the compiler that the handler returns
-something that implements the `IntoResponse` trait. with the following line:
+something that implements the `IntoResponse` trait with the following line:
 
 #sourcecode(numbering: none)[```rust
 async fn print_user() -> impl IntoResponse
 ```]
 
 But how does our own custom type `User` implement the `IntoResponse` trait? The
-answer and beautiful part of axum is that we do not. Instead axum uses macros#footnote("https://doc.rust-lang.org/book/ch19-06-macros.html")
+answer and beautiful part of axum is that it does  not. Instead axum uses macros#footnote("https://doc.rust-lang.org/book/ch19-06-macros.html")
 to automatically implement the `IntoResponse` trait for tuples of different
 sizes.
 
@@ -380,8 +380,8 @@ image("../assets/into_response_status_code.png"),
 caption: [IntoResponse implementations]
 )
 
-For example tuples of size 0 to 16 where the first element 
-implements the `StatusCode` and just like before the last element implements the 
+For example, tuples of size 0 to 16 where the first element 
+implements the `StatusCode` and just like before, the last element implements the 
 `IntoResponse` trait while the other elements implement the `IntoResponseParts` trait.
 
 
@@ -394,7 +394,7 @@ implements the `IntoResponse` trait. The `IntoResponse` trait is automatically
 implemented for commonly used types aswell as different sized tuples. It is also
 possible to implement the trait manually for specific use cases.
 
-Lets check the return value from the example shown in  @IntoResponse again:
+Let's check the return value from the example shown in  @IntoResponse again:
 
 #sourcecode(numbering: none)[```rust 
 (
@@ -416,7 +416,7 @@ where
 ```]
 
 The first element of the tuple is a `StatusCode`, so this is correct. And the 
-second element of the tuple is a `Json<User>`. In the documentation of `axum::Json`
+second element of the tuple is a `Json<User>`. In the documentation of `axum::Json`,
 the following implementation is shown:
 
 #sourcecode(numbering: none)[```rust 
@@ -467,7 +467,7 @@ async fn main() {
 caption: [main function]
 )
 
-The main function is marked as asyncronous using the `#[tokio::main]` macro.
+The main function is marked as asynchronous using the `#[tokio::main]` macro.
 #linebreak()
 
 The first thing the main function does is initialize tracing. Tracing is a
@@ -490,11 +490,11 @@ tracing_subscriber::registry()
 caption: [tracing initialization]
 )
 
-The tracing subscriber is initialized by either set by the default
+The tracing subscriber is initialized by the default
 environment variable `RUST_LOG` or set to the provided default value.
 #linebreak()
 
-Afterwards axum router is created.
+Afterwards, an axum router is created.
 
 #figure(
   sourcecode()[```rust 
@@ -507,7 +507,7 @@ caption: [axum router]
 )
 
 The router is created with one route that matches the path `/replay`. 
-The rout has two `MethodFilter`s attached to it. The first filter matches the 
+The route has two `MethodFilter`s attached to it. The first filter matches the 
 `GET` method and the second filter matches the `POST` method. The `GET` method 
 is handled by the `get_messages` handler and the `POST` method is handled by the 
 `replay` handler.
@@ -574,7 +574,7 @@ async fn initialize_state() -> Arc<AppState> {
 caption: [initialize state]
 )
 
-The function is marked as asyncronous using the `async` keyword and returns an
+The function is marked as asynchronous using the `async` keyword and returns an
 `Arc<AppState>`. 
 
 #sourcecode(numbering: none)[```rust 
@@ -746,7 +746,7 @@ async fn get_messages(
 caption: [get_messages handler]
 )
 
-The handler takes two arguments. The first argument is the application state 
+The handler takes two arguments. The first argument is the application state,
 the second argument is an extractor. The extractor is used to extract the query 
 parameters from the request. The query parameters are deserialized into a struct 
 called `MessageQuery`.
@@ -784,9 +784,9 @@ The handler returns a ```rust Result<impl IntoResponse, AppError>```.
 By returning a Result, the handlers can be written in a more idiomatic way and 
 take advantage of the `?` operator. The `?` operator is used to propagate errors.
 
-The problem is, axum does not know how to turn an `AppError` into a response. In
+axum does not know how to turn an `AppError` into a response. In
 the axum examples#footnote("https://github.com/tokio-rs/axum/tree/axum-0.6.21/examples") 
-there is an example,on how to use the `anyhow` crate#footnote("https://docs.rs/anyhow/1.0.40/anyhow/") 
+there is an example, on how to use the `anyhow` crate#footnote("https://docs.rs/anyhow/1.0.40/anyhow/") 
 to handle errors.
 
 #linebreak()
@@ -871,11 +871,11 @@ async fn replay(
 caption: [replay handler]
 )
 
-According to the openapi specification from the microservice shown in @openapi_specification 
+According to the openapi specification from the microservice shown in @openapi_specification,
 the POST method supports two different kinds of schema.
 #linebreak()
 
-Two represent the two different kinds of schema, an enum is used.
+To represent the two different kinds of schema, an enum is used.
 
 #figure(
   sourcecode()[```rust 
@@ -940,7 +940,7 @@ one of the variants of the enum. Instead, serde tries to deserialize the JSON in
 each variant in order and returns the first variant that succeeds.
 #linebreak()
 
-Without the `#[serde(untagged)]` attribute the following JSON body representing a time-based replay would be invalid.
+Without the `#[serde(untagged)]` attribute, the following JSON body representing a time-based replay would be invalid.
 
 #sourcecode(numbering: none)[```json 
 {
@@ -976,7 +976,7 @@ async fn replay(
 ```]
 
 The `replay` handler just like the `get_messages` handler returns a ```rust
-Result<impl IntoResponse, AppError>```.
+Result<impl IntoResponse, AppError>```
 
 In the function body serialized JSON body is matched against the two variants of
 the `ReplayMode` enum. Depending on the variant, the `replay_time_frame` or the
@@ -999,7 +999,7 @@ caption: [match replay_mode]
 The `replay_time_frame` function shown in @replay_time_frame or the `replay_header`
 function shown in @replay_header returns the messages that should be replayed.
 
-The vector of messages is passed to the `publish_message` function shown in @publish_message.
+The vector of messages is passed to the `publish_message` function shown in @publish_message,
 and later the newly published messages are returned as JSON as well as a status code 200.
 
 #figure(
@@ -1210,7 +1210,7 @@ skip serializing the field if the field is `None`. This results in a cleaner
 JSON response.
 #linebreak()
 
-As shown in the @MessageOptions the microservice can be configured to add a
+As shown in the @MessageOptions, the microservice can be configured to add a
 transaction ID to the message. The transaction ID is added to the message as a
 custom header. If this option is enabled, the `TransactionHeader` struct holds the name of the header and the value of the header for the specific
 message.
@@ -1312,7 +1312,7 @@ The `Consumer` is used to iterate over the messages in the queue. The `Consumer`
 is a stream and the `next` method is called on the `Consumer`. The `next` method 
 returns an `Option<Result<Delivery>>`. The `Delivery` struct holds the message 
 data and the message metadata.
-The problem with the consumer is, the consumer does not know when to stop
+An issue with the consumer is, the consumer does not know when to stop
 consuming messages. The consumer is a subscription-based approach. The consumer 
 will keep consuming messages until the connection is closed. Therefore the 
 iterator would never stop. 
@@ -1481,7 +1481,7 @@ and *not having a timestamp* is already handled by the `is_within_timeframe`
 function shown in @heading_is_within_timeframe.
 #linebreak()
 
-Additionally in each iteration the offset is checked if it is the last message,
+Additionally, in each iteration the offset is checked if it is the last message,
 to determine if the loop should be exited.
 #sourcecode(numbering: none)[```rs
 if *offset >= i64::try_from(message_count - 1)?{
@@ -2157,7 +2157,7 @@ while let Some(message) = s.next().await {
 caption: [create channel and stream]
 )
 
-As shown in @MessageOptions the microservice supports 
+As shown in @MessageOptions, the microservice supports 
 adding a custom transaction header or a timestamp to a message.
 Both of these features are optional thus resulting in the following matrix.
 
@@ -2175,13 +2175,13 @@ Both of these features are optional thus resulting in the following matrix.
     [timestamp is added to message],
     [true],
     [Some],
-    [timestamp and transaction header is added to message],
+    [timestamp and transaction header are added to message],
     [false],
     [Some],
     [transaction header is added to message],
     [false],
     [None],
-    [no timestamp or transaction header is added to message],
+    [no timestamp or transaction header are added to message],
     ),
     kind: table,
     caption: [publish options matrix]
@@ -2282,10 +2282,9 @@ caption: [return replayed messages]
 
 The `get_queue_message_count` function is used to retrieve metadata about the
 queue using the RabbitMQ management API. This is necessary because the AMQP
-protocol does not provide a way to check if a queue does actually exist and if
-it does exist, how many messages are in the queue. The only way to get the
+protocol does not provide a way to check if a queue does actually exist or how many  messages are in the queue. The only way to get the
 number of messages in a queue using the AMQP protocol is to declare the queue
-again. The problem is, if the queue already exists, the number of messages in
+again.  If the queue already exists, the number of messages in
 the queue is returned as wanted but if the queue does not exist, the queue gets
 created. This is not the desired behaviour. Therefore the RabbitMQ management
 API is used.

@@ -8,8 +8,8 @@ middleware that facilitates communication between different parts of a
 distributed application. RabbitMQ is often used in scenarios where you need to
 handle asynchronous communication, decouple components of a system, and ensure
 reliable message delivery. It's particularly valuable in distributed systems,
-and microservices architectures, and for implementing various messaging patterns
-like publish-subscribe, request-reply, and more.
+and microservices architectures, as well as for implementing various messaging patterns
+such as publish-subscribe, request-reply, and more.
 
 RabbitMQ, or rather AMQP-0-9-1 achieves this by decoupling the sending and receiving systems.
 The sending system is called a producer and the receiving system is called a
@@ -47,7 +47,7 @@ from the queue when they choose to do so.
 == Exchange<exchange>
 
 Exchanges are AMQP-0-9-1 entities. An exchange receives messages from producers
-and pushes them to queues depending on rules called bindings. An exchange routs
+and pushes them to queues depending on rules called bindings. An exchange routes
 a message to zero or more queues. AMQP-0-9-1 defines four types of
 exchanges@rabbitmq-exchange-types:
 
@@ -242,7 +242,7 @@ caption: [Streams Use Cases],
 
 == Protocols
 
-RabbitMQ supports several protocols@rabbitmq-protocols
+RabbitMQ supports several protocols@rabbitmq-protocols:
 
 #figure(
 tablex(
@@ -259,7 +259,7 @@ therefore supported in a large number of clients and languages.],
 [STOMP],
 [STOMP is a text-based messaging protocol. STOMP emphasizes simplicity. It does
 not define strict messaging semantics and is therefore easy to implement. It is
-also the only protocol that can be used manually over telnet],
+also the only protocol that can be used manually over telnet.],
 [MQTT],
 [MQTT is a binary communication protocol that places a strong emphasis on
 lightweight publish/subscribe messaging. It is designed primarily for use with
@@ -271,7 +271,7 @@ for other messaging styles.],
 from AMQP 0-9-1. AMQP 1.0 places fewer semantic demands, making it easier to add
 to existing brokers. Although it is easier to add to existing brokers, the
 protocol is substantially more complex than AMQP 0-9-1 and there are fewer
-client implementations],
+client implementations.],
 [HTTP and WebSockets],
 [HTTP and WebSockets are not messaging protocols. RabbitMQ can transmit messages
 over HTTP in the following ways:
@@ -297,7 +297,7 @@ middleware brokers.
 
 In the next sections, we will take a brief look at the AMQP
 wire-level format as specified in the AMQP 0-9-1 specification@amqp_0_9_1_spec.
-This is the format that is used to send and receive messages over the network. The short excourse 
+This is the format that is used to send and receive messages over the network. The short excursion 
 is intended to provide a better understanding of the AMQP 0-9-1 protocol and help evaluate a
 suitable client library in @evaluation
 
@@ -320,7 +320,7 @@ caption: [AMQP Protocol Header],
 )
 
 The client and server then agree on a protocol version.
-After this the general format of a frame is as follows:
+After this, the general format of a frame is as follows:
 
 #figure(
 rect(
@@ -406,7 +406,7 @@ AMQP-0-9-1 does not have first-class support for streaming queues but streams ca
 === RabbitMQ Streams Protocol
 
 The RabbitMQ Streams protocol is a new messaging protocol that is designed to be 
-used with RabbitMQ Streams@rabbitmq_stream_spec. It's still in development and subject to change.
+used with RabbitMQ Streams@rabbitmq_stream_spec. It is still in development and subject to change.
 Similar to in @amqp_0_9_1, we take a short tour through the protocol to get a better understanding of the protocol.
 For a more detailed and complete description, see the RabbitMQ Streams Protocol specification#footnote([https://github.com/rabbitmq/rabbitmq-server/blob/v3.12.x/deps/rabbitmq_stream/docs/PROTOCOL.adoc]).
 
@@ -428,7 +428,7 @@ align: (center + horizon,  center + horizon),
 [string],
 [16-bit signed integer denoting the length of the string, followed by the UTF-8 encoded string itself. length of -1 indicates null.],
 [array],
-[32-bit signed integer denoting the length of the array, followed by the repetition of the structure, notation uses \[\], e.g. \[int32\] for an array of int32,]
+[32-bit signed integer denoting the length of the array, followed by the repetition of the structure, notation uses \[\], e.g. \[int32\] for an array of int32.]
 ))
 
 ==== Frame Format 

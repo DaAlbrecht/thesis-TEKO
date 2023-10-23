@@ -66,5 +66,30 @@
   body
   pagebreak()
   bibliography("bibliography.yaml")
-  outline(title: "Appendix", target: figure.where(kind: "appendix"))
+
+let annex(body) = {
+    counter(heading).update(0)
+    set heading(numbering: "A", outlined: false)
+
+    show heading: it => {
+        if it.level == 1 {
+            pagebreak(weak: true)
+            block[
+                #set par(leading: 0.4em, justify: false)
+                #underline(smallcaps[Annex #counter(heading).display(it.numbering): #it.body], evade: true, offset: 4pt)
+                #v(0.2em)
+            ]
+        } else if it.level == 2 {
+            block[
+                #underline(smallcaps(it.body), evade: true, offset: 3pt)
+
+                #v(10pt)
+            ]
+        }
+    }
+    body
+}
+  show: annex
+  include "./content/annexes.typ"
+
 }

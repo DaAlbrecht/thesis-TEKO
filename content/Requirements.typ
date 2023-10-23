@@ -56,7 +56,7 @@ The following Stakeholders are identified:
     [The microservice should be deployable in a containerized environment],
     [STR-4],
     [OPS],
-    [The microservice should be resource efficient],
+    [The microservice should be resource-efficient],
     [STR-5],
     [OPS],
     [The microservice should be easy to operate],
@@ -187,7 +187,7 @@ kind: image,
 caption: [Request flow],
 )
 
-In both the in and out flow, the microservice needs to aggregate observability data according to
+In both the in- and outflow, the microservice needs to aggregate observability data according to
 the following table.
 
 #figure(
@@ -202,7 +202,7 @@ the following table.
     [OBS-1],
     [EXT-4],
     [Metrics],
-    [CPU ussage],
+    [CPU usage],
     [OBS-2],
     [EXT-4],
     [Metrics],
@@ -276,7 +276,7 @@ the following table.
 
 === OpenAPI specification<openapi_specification>
 
-The microservice needs to have the following API specification
+The microservice needs to have the following API specification:
 
 #figure(
 sourcecode()[
