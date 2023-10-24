@@ -44,6 +44,10 @@
   [Continuous Delivery],
   [iff],
   [if and only if],
+  [ELK-Stack],
+  [Elasticsearch, Logstash, Kibana],
+  [COTS],
+  [Commercial Off-The-Shelf],
 ), kind: table, caption: "Glossary")<glossary>
 
 #pagebreak()

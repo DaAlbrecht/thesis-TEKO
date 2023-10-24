@@ -45,6 +45,7 @@ the following credentials:
 - username: guest
 - password: guest
 
+#pagebreak()
 === Rust - lapin 
 
 Rust is my most familiar language. I have used it for many different projects.
@@ -496,25 +497,31 @@ Overall, the experience with amqp091-go was very similar to the other libraries.
 
 === Evaluation matrix
 
+The previously tested libraries for the languages Rust, Java, and Go are evaluated
+in the following table. The criteria are weighted with a value from 1 to 5, where
+5 is the best and 1 is the worst. The total score is calculated by multiplying the 
+weight with the score for each criterion. The total score is then used to compare 
+the libraries.
+
   #[
   #show regex("\w"): it => [#sym.zws;#it]
 #figure(
 tablex(
-columns: (auto, auto, auto, auto,auto,auto),
+columns: (3fr, 2fr, 3fr, 1fr,1fr,1fr),
 rows: (auto),
 align: (left + horizon , center + horizon, left + horizon, center + horizon, center + horizon, center + horizon),
 [*Criteria*],
 [*Weight(1-5)*],
 [*Description*],
-[*lapin*],
-[*rabbitmq#sym.zws;-java-client*],
-[*amqp091-go*],
+[*Rust*],
+[*Java*],
+[*Go*],
 [Installation],
 [2],
 [Easy and documented installation process],
+[5],
 [2],
-[0],
-[1],
+[2],
 [API Clarity and Consistency],
 [5],
 [Clear, consistent, and intuitive API design],
@@ -524,7 +531,7 @@ align: (left + horizon , center + horizon, left + horizon, center + horizon, cen
 [Documentation],
 [5],
 [Clear,complete and maintained documentation],
-[3],
+[4],
 [4],
 [3],
 [Community],
@@ -543,32 +550,32 @@ align: (left + horizon , center + horizon, left + horizon, center + horizon, cen
 [4],
 [Support for Unix based systems],
 [4],
-[4],
-[4],
+[5],
+[5],
 [Performance],
 [3],
 [Message throughput],
-[3],
-[3],
-[3],
+[5],
+[5],
+[5],
 [Error Handling],
 [3],
 [Clear and consistent error handling],
+[5],
 [3],
-[3],
-[3],
+[4],
 [Licensing Terms],
 [5],
 [Open-source license],
 [5],
 [5],
 [5],
-[Total],
-[36],
+[*Total*],
+[*180*],
 [],
-[33],
-[30],
-[29],
+[*162*],
+[*140*],
+[*130*]
 )
 )
 ]

@@ -116,13 +116,9 @@ inherently asynchronous.
   #figure(
   sourcecode()[```rust
 use axum::{routing::get, Router};
-
 #[tokio::main]
 async fn main() {
-    // build our application with a single route
     let app = Router::new().route("/", get(print_hello));
-
-    // run it with hyper on localhost:3000
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
         .serve(app.into_make_service())
         .await
@@ -185,6 +181,8 @@ axum::Server::bind(&addr)
 caption: [starting the server]
 )
 
+#pagebreak()
+
 To better visualize the relationship between a service and a handler the
 the following program is used to demonstrate their purpose.
 
@@ -233,6 +231,8 @@ The difference between the two is, that the `FromRequest` consumes the request b
 and thus can only be used once. The `FromRequestParts` trait does not consume the
 request body and can be used multiple times. 
 
+#pagebreak()
+
 So if we consider the following modified hello world example:
 
 #figure(
@@ -279,7 +279,8 @@ that can be turned into a `Response`.
 
 A `Response` is every type that implements the `IntoResponse` trait. axum implements
 the trait for many common types like `String`, `&str`, `Vec<u8>`, `Json`, and many more.
-But the real magic of axum is the following:
+#pagebreak()
+But the real magic of axum is the demonstrate in the next examples.
 
 #figure(
 sourcecode()[```rust
@@ -938,8 +939,8 @@ The enum is annotated with `#[serde(untagged)]`.
 The `#[serde(untagged)]` attribute is used to tell serde to not explicitly identify
 one of the variants of the enum. Instead, serde tries to deserialize the JSON into 
 each variant in order and returns the first variant that succeeds.
-#linebreak()
 
+#pagebreak()
 Without the `#[serde(untagged)]` attribute, the following JSON body representing a time-based replay would be invalid.
 
 #sourcecode(numbering: none)[```json 
@@ -999,6 +1000,7 @@ caption: [match replay_mode]
 The `replay_time_frame` function shown in @replay_time_frame or the `replay_header`
 function shown in @replay_header returns the messages that should be replayed.
 
+#pagebreak()
 The vector of messages is passed to the `publish_message` function shown in @publish_message,
 and later the newly published messages are returned as JSON as well as a status code 200.
 
@@ -1009,8 +1011,6 @@ and later the newly published messages are returned as JSON as well as a status 
 ```],
 caption: [publish and return messages]
 )
-
-#pagebreak()
 
 == Replay component
 
@@ -1645,6 +1645,7 @@ while let Some(Ok(delivery)) = consumer.next().await {
 caption: [consume messages from queue]
 )
 
+#pagebreak()
 In the `while let` loop the `ack` method is called on the `Delivery`. After acknowledging the message,
 the `headers` property is extracted from the `Delivery`.
 
@@ -1896,6 +1897,7 @@ let offset = match headers.inner().get("x-stream-offset") {
 caption: [extract offset]
 )
 
+#pagebreak()
 The `timestamp` is extracted from the `Delivery`. The `timestamp` is used as argument for the 
 `is_within_timeframe` function shown in @heading_is_within_timeframe. The `is_within_timeframe`
 takes the `Delivery` timestamp, the `from` and the `to` fields of the `TimeFrameReplay` struct as
@@ -1939,6 +1941,8 @@ Ok(messages)
 ```],
 caption: [return messages]
 )
+
+#pagebreak()
 
 === is_within_timeframe<heading_is_within_timeframe>
 
@@ -2347,7 +2351,7 @@ caption: [get_queue_message_count function signature]
 The function returns a `Result<Option<u64>>`. 
 If the queue is not of type `stream` an error is returned otherwise the number 
 of messages in the queue is returned.
-
+#pagebreak()
 First, a new HTTP client is created. The URL to the RabbitMQ management API is 
 constructed using the `RabbitmqApiConfig` struct.
 
@@ -2469,6 +2473,7 @@ CMD ["./rabbit-revival"]
 caption: [Dockerfile]
 )
 
+#pagebreak()
 The Dockerfile starts by using the official `rust:1.73.0-slim-buster` image as the base 
 image. The `rust:1.73.0-slim-buster` image is based on the `debian:buster-slim` image.
 The Dockerfile takes advantage of the layer caching mechanism of Docker. Docker can 

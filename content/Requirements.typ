@@ -34,7 +34,12 @@ The following Stakeholders are identified:
 
 #pagebreak()
 
-== Stakeholder Requirements<stakeholder_requirements>
+== Stakeholder interview
+
+
+#include "../personal/interview.typ"
+
+== Stakeholder requirements<stakeholder_requirements>
 
 #figure(
   tablex(
@@ -112,6 +117,7 @@ The following Stakeholders are identified:
   kind: table,
   caption: [Stakeholder Requirements],
 )
+#pagebreak()
 
 == System architecture and design
 
@@ -182,7 +188,7 @@ identify the message in the RabbitMQ queue. The microservice then sends a reques
 RabbitMQ to requeue the message. The following figure shows the request flow.
 
 #figure(
-image("../assets/request_flow.svg"),
+image("../assets/request_flow.svg", width: 90%),
 kind: image,
 caption: [Request flow],
 )
