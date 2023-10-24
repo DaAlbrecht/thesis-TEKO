@@ -20,6 +20,8 @@ As seen in @a_plan the project schedule is divided into seven different phases a
 
 == Milestones
 
+The following milestones have been defined for the project schedule:
+
 #figure(
   table(
     columns: (auto,auto),
@@ -69,40 +71,22 @@ is made and a skeleton for the table of content is added.
 In the first phase the teko specific requirements like a short curriculum vitae
 is also written.
 The first phase ends with the introduction of the thesis problem.
-#linebreak()
-#linebreak()
 The second phase is the requirements engineering phase. In this phase the 
 stakeholders and use cases are identified and the requirements are gathered. 
-#linebreak()
-#linebreak()
 RabbitMQ is a new topic in this thesis and therefore the third phase is deticated
 to researching RabbitMQ components, queues and the AMQP protocol.
 This research is the basis for the evaluation phase.
-#linebreak()
-#linebreak()
 In the fourth phase, different AMQP client libraries are evaluated.
 The evaluation is based on the research done in the previous phase.
 Additionally an architecture for the microservice is designed.
-#linebreak()
-#linebreak()
-The fifth phase is the implementation phase. In this phase the microservice is
-implemented. The implementation is based on the architecture designed in 
+The fifth phase is the implementation phase. The implementation is based on the architecture designed in 
 the previous phase.
-#linebreak()
-#linebreak()
 The sixth phase is the verification phase. In this phase the microservice is
 verified against the requirements.
-#linebreak()
-#linebreak()
 In the seventh phase, the thesis gets finished and the additional chapters like 
 a cover page or acknowledgments are added.
-#linebreak()
-#linebreak()
 The last phase is the presentation. In this phase a short presentation is created and micro webpage in the thesis portal is launched.
-#linebreak()
-#linebreak()
 
-The following milestones have been defined for the project schedule:
 #pagebreak()
 
 #include "../personal/Profitability.typ"
