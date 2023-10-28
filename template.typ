@@ -65,7 +65,6 @@
 
   body
   pagebreak()
-  bibliography("bibliography.yaml")
 
 let annex(body) = {
     counter(heading).update(0)

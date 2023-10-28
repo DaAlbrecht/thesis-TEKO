@@ -7,7 +7,7 @@ project management methodology is based on the specific characteristics of this
 thesis project.
 
 The Waterfall methodology has been selected as a suitable approach due to
-several key factors. 
+several key factors:
 - the project is being conducted independently, without the involvement of a team, making the linear and sequential nature of
   Waterfall a practical fit.
 - the project operates within strict time constraints
@@ -48,17 +48,17 @@ The following milestones have been defined for the project schedule:
   )
 
   Two meetings with the thesis supervisor are planned. The first meeting is to gain early feedback 
-  about the thesis structure while the second meeting is to discuss the implementation documentation structure and for potential questions.
-  The proof reading is planned to be done by a third party to ensure that the thesis is free of spelling and grammar mistakes.
+  about the thesis structure while the second meeting is to discuss the implementation documentation structure and potential questions.
+  The proofreading is planned to be done by a third party to ensure that the thesis is free of spelling and grammar mistakes.
 
 #pagebreak()
 == Project phases
 
-The project has the following phases:
+The project consists of the following phases:
 
-1. planning / specifics for teko 
+1. planning / specifics for TEKO 
 2. requirements engineering
-3. reserach
+3. research
 4. evaluation
 5. implementation
 6. verification
@@ -66,11 +66,11 @@ The project has the following phases:
 8. presentation
 
 #linebreak()
-In the first phase the project schedule is created. Additionally, the thesis template
+In the first phase, the project schedule is created. Additionally, the thesis template
 is made and a skeleton for the table of content is added.
-In the first phase the teko specific requirements like a short curriculum vitae
+In the first phase, the TEKO specific requirements such as a short curriculum vitae
 is also written.
-The first phase ends with the introduction of the thesis problem.
+The first phase ends with the introduction of the  problem statement.
 The second phase is the requirements engineering phase. In this phase the 
 stakeholders and use cases are identified and the requirements are gathered. 
 RabbitMQ is a new topic in this thesis and therefore the third phase is deticated
@@ -78,7 +78,7 @@ to researching RabbitMQ components, queues and the AMQP protocol.
 This research is the basis for the evaluation phase.
 In the fourth phase, different AMQP client libraries are evaluated.
 The evaluation is based on the research done in the previous phase.
-Additionally an architecture for the microservice is designed.
+Additionally, an architecture for the microservice is designed.
 The fifth phase is the implementation phase. The implementation is based on the architecture designed in 
 the previous phase.
 The sixth phase is the verification phase. In this phase the microservice is

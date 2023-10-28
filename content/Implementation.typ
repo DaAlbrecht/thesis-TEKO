@@ -47,7 +47,7 @@ For the development of the replay microservice, the following tools are required
 
  Rust does not provide a large standard library, instead, it relies on third-party
 crates for many basic functionalities. Based on the @architecture axum is used
-as a web framework, tokio is used for asynchronous runtime  and lapin is used
+as a web framework, Tokio is used for asynchronous runtime  and lapin is used
 as a RabbitMQ client. The dependencies and other commonly used crates are added to the Cargo.toml file:
 
 #figure(sourcecode(numbering: none)[```bash 
@@ -66,24 +66,24 @@ cargo add anyhow
     align: (center + horizon, left),
     [*Name*],
     [*Description*],
-    [tokio],
+    [Tokio],
     [Tokio is an asynchronous runtime],
     [axum],
     [axum is a web framework created by the tokio team],
     [lapin],
-    [Lapin is a RabbitMQ client],
-    [serde],
+    [lapin is a RabbitMQ client],
+    [Serde],
     [Serde is a serialization / deserialization framework],
-    [serde_json],
-    [Serde json is a serde implementation for json],
+    [Serde_json],
+    [Serde json is a Serde implementation for json],
     [anyhow],
-    [Anyhow is a crate for easy error handling],
+    [anyhow is a crate for easy error handling],
     ),
     kind: table,
     caption: [overview of commonly used crates]
 )
 
-With the basic project setup done, the first task is to implement the web service according to the openapi specification from  @openapi_specification
+With the basic project setup done, the first task is to implement the web service according to the OpenAPI specification from  @openapi_specification
 
  == Webservice
 
@@ -91,7 +91,7 @@ In order to understand the implementation of the replay microservice, first some
 
 === axum concepts
 
-axum uses tower#footnote("https://docs.rs/tower/latest/tower/index.html") under the hood. Tower is a high-level abstraction for
+Axum uses tower#footnote("https://docs.rs/tower/latest/tower/index.html") under the hood. Tower is a high-level abstraction for
 networking applications. The basic idea is that a trait #footnote("https://doc.rust-lang.org/book/ch10-02-traits.html") called
 `Serivce` exists. This service receives a request and returns either a response or
 an error.
@@ -110,7 +110,7 @@ caption: [stripped down tower service trait]
 Since a `Service` is generic, any middleware that also implements the `Service`
 trait can be used allowing axum to use a large ecosystem of middleware.
 
-axum like any other web sever needs to be able to handle multiple requests concurrently, making a web server
+Axum like any other web sever needs to be able to handle multiple requests concurrently, making a web server
 inherently asynchronous. 
 
   #figure(
@@ -131,7 +131,7 @@ async fn main() {
 Rust uses colored functions#footnote(
   "https://journal.stuffwithstuff.com/2015/02/01/what-color-is-your-function/",
 ) and therefore, functions that call asynchronous functions need to be marked as
-asynchronous as well. Since rust does not provide an asynchronous runtime it's not
+asynchronous as well. Since Rust does not provide an asynchronous runtime it's not
 possible to declare the main entrypoint with the `async` keyword. Tokio uses the
 macro `#[tokio::main]` to allow specifying the main function as asynchronous.#footnote("https://tokio.rs/tokio/tutorial/hello-tokio")
 without needing to use the runtime or builder directly.
@@ -156,7 +156,7 @@ fn main() {
 
 The main function handles the creation of the axum server and starts the server.
 
-In axum, the routing is handled by the `Router` struct. The `Router` matches request paths to rust functions called `Handlers` based on the HTTP method filter.
+In axum, the routing is handled by the `Router` struct. The `Router` matches request paths to Rust functions called `Handlers` based on the HTTP method filter.
 
 #figure(
 sourcecode()[```rust
@@ -221,7 +221,7 @@ curl 'localhost:3000'
 ```]
 
 In the example above the `print_hello` handler takes no arguments and just returns
-a static string. In the openapi specification, the replay microservice needs to be able to 
+a static string. In the OpenAPI specification, the replay microservice needs to be able to 
 receive query parameters or a JSON body. 
 #linebreak()
 
@@ -472,7 +472,7 @@ The main function is marked as asynchronous using the `#[tokio::main]` macro.
 #linebreak()
 
 The first thing the main function does is initialize tracing. Tracing is a
-framework for instrumenting rust programs with structured logging and diagnostics.
+framework for instrumenting Rust programs with structured logging and diagnostics.
 Tracing is provided by the crate `tracing`#footnote("https://docs.rs/tracing/latest/tracing/") and `tracing-subscriber`#footnote("https://docs.rs/tracing-subscriber/0.3.17/tracing_subscriber/"). 
 
 #figure(
@@ -785,7 +785,7 @@ The handler returns a ```rust Result<impl IntoResponse, AppError>```.
 By returning a Result, the handlers can be written in a more idiomatic way and 
 take advantage of the `?` operator. The `?` operator is used to propagate errors.
 
-axum does not know how to turn an `AppError` into a response. In
+Axum does not know how to turn an `AppError` into a response. In
 the axum examples#footnote("https://github.com/tokio-rs/axum/tree/axum-0.6.21/examples") 
 there is an example, on how to use the `anyhow` crate#footnote("https://docs.rs/anyhow/1.0.40/anyhow/") 
 to handle errors.
@@ -872,7 +872,7 @@ async fn replay(
 caption: [replay handler]
 )
 
-According to the openapi specification from the microservice shown in @openapi_specification,
+According to the OpenAPI specification from the microservice shown in @openapi_specification,
 the POST method supports two different kinds of schema.
 #linebreak()
 
@@ -936,8 +936,8 @@ caption: [AMQPHeader]
 
 The enum is annotated with `#[serde(untagged)]`. 
 #linebreak()
-The `#[serde(untagged)]` attribute is used to tell serde to not explicitly identify
-one of the variants of the enum. Instead, serde tries to deserialize the JSON into 
+The `#[serde(untagged)]` attribute is used to tell Serde to not explicitly identify
+one of the variants of the enum. Instead, Serde tries to deserialize the JSON into 
 each variant in order and returns the first variant that succeeds.
 
 #pagebreak()
@@ -1245,7 +1245,7 @@ caption: [match message count]
 )
 
 
-After the number of messages in the queue is known, a connection to the amqp
+After the number of messages in the queue is known, a connection to the AMQP
 server is established. A channel is created and the `basic_qos` method is called
 on the channel. The `basic_qos` method is used to limit the number of messages
 that are being prefetched from the queue. The `basic_qos` method is called with
@@ -1291,7 +1291,7 @@ The `basic_consume` method returns a `Consumer`. The `Consumer` implements the
 #linebreak()
 
 The `stream_consume_args` function takes an `AMQPValue` as an argument and
-returns a `FieldTable`. The `FieldTable` is used to pass additional amqp
+returns a `FieldTable`. The `FieldTable` is used to pass additional AMQP
 arguments to the `basic_consume` method. The `x-stream-offset` argument is used
 to specify the start position of the stream. The `x-stream-offset` argument is
 set to `first`. This means the consumer will start reading from the first
@@ -1588,7 +1588,7 @@ caption: [replay_header function signature]
 )
 
 The function returns a `Result<Vec<Delivery>>`. The `Delivery`#footnote("https://docs.rs/lapin/latest/lapin/message/struct.Delivery.html") struct
-represents a received amqp message and is defined in the `lapin` crate.
+represents a received AMQP message and is defined in the `lapin` crate.
 #linebreak()
 
 The function starts by fetching the number of messages in the queue. The number of 
@@ -1606,7 +1606,7 @@ let message_count =
 caption: [match message count]
 )
 
-After the number of messages in the queue is known, a connection to the amqp 
+After the number of messages in the queue is known, a connection to the AMQP 
 server is established. A channel is created and the `basic_qos` method is called
 on the channel. 
 #linebreak()
@@ -1814,7 +1814,7 @@ caption: [replay_time_frame function signature]
 )
 
 The function returns a `Result<Vec<Delivery>>`. The `Delivery`#footnote("https://docs.rs/lapin/latest/lapin/message/struct.Delivery.html") struct
-represents a received amqp message and is defined in the `lapin` crate.
+represents a received AMQP message and is defined in the `lapin` crate.
 #linebreak()
 The function starts by fetching the number of messages in the queue. The number of
 messages in the queue is used to determine if the message is the last message in the queue in the 
@@ -1831,7 +1831,7 @@ let message_count =
 caption: [match message count]
 )
 
-After the number of messages in the queue is known, a connection to the amqp 
+After the number of messages in the queue is known, a connection to the AMQP 
 server is established. A channel is created and the `basic_qos` method is called
 on the channel.
 #linebreak()
@@ -2142,9 +2142,9 @@ The function returns a `Result<Vec<Message>>`. The `Message` struct is defined
 in @Message_struct.
 #linebreak()
 
-The function starts by establishing a connection to the amqp server. A channel
+The function starts by establishing a connection to the AMQP server. A channel
 is created and a stream#footnote("https://rust-lang.github.io/async-book/05_streams/01_chapter.html")
-is created from the `messages` vector. A stream in rust is an asynchronous
+is created from the `messages` vector. A stream in Rust is an asynchronous
 iterator. The `next` method is called on the stream to iterate over the messages
 in the `messages` vector. A new vector called `replayed_messages` is created.
 The `replayed_messages` vector is used to store the messages that should be
@@ -2489,20 +2489,20 @@ as the base image. The needed runtime dependencies are installed. The binary is
 copied from the previous stage. A new user is created and the binary is marked
 as executable for the given user. As entrypoint, the binary is executed.
 #linebreak()
-Debian was chosen because alpine, the otherwise industry standard base image
-does not integrate as easily with rust. alpine is based on musl libc which is
-not compatible with the rust standard library. Therefore the rust standard
+Debian was chosen because Alpine, the otherwise industry standard base image
+does not integrate as easily with Rust. Alpine is based on musl libc which is
+not compatible with the Rust standard library. Therefore the Rust standard
 library needs to be compiled with musl libc. 
 This is not a problem per se but
-unnecessary work. Debian is based on glibc which is compatible with rust.
+unnecessary work. Debian is based on glibc which is compatible with Rust.
 
 
 #pagebreak()
 
 == CI/CD
 
-Github actions are used as CI/CD framework. The project has no continuous deployment 
-pipeline because thats for the user of the microservice to decide. The CI part of the 
+GitHub actions are used as CI/CD framework. The project has no continuous deployment 
+pipeline because that is for the user of the microservice to decide. The CI part of the 
 pipeline is shown below in @ci_pipeline.
 
 
@@ -2513,7 +2513,7 @@ pipeline is shown below in @ci_pipeline.
 )<ci_pipeline>
 
 The CI pipeline is triggered on every push to the `master` branch if one of the 
-following paths changed.
+following paths changed:
  - src/\*\*
  - Cargo.toml
  - Cargo.lock
@@ -2545,9 +2545,9 @@ jobs:
    caption: [Automated tests],
  )
 
-The CI pipeline runs the tests on the latest ubuntu image. First the repository
-is checked out, afterwards the stable rust toolchain is installed.
-Lastly the tests are run using the `cargo test` command.
+The CI pipeline runs the tests on the latest Ubuntu image. First the repository
+is checked out, afterwards, the stable Rust toolchain is installed.
+Lastly, the tests are run using the `cargo test` command.
 #linebreak()
 If one of the tests fails, the pipeline fails. If all tests pass, the pipeline 
 succeeds and the job responsible for building the container is triggered.
@@ -2601,15 +2601,15 @@ The container is built using the `docker/build-push-action` action#footnote(
 root of the repository. The image is tagged using the git commit hash available
 from the predefined environment variables #footnote(
   "https://docs.github.com/en/actions/reference/environment-variables#default-environment-variables",
-). If the build succeeds, the container is pushed to the Github container
-registry. The Github container registry is used because it is free and
-integrated into Github. No additional authentication is needed to push to the
-Github container registry making it easy to use.
+). If the build succeeds, the container is pushed to the GitHub container
+registry. The GitHub container registry is used because it is free and
+integrated into GitHub. No additional authentication is needed to push to the
+GitHub container registry, making it easy to use.
 
 #pagebreak()
-In contrast to the jobs triggered on push, the dependabot job is triggered on a
+In contrast to the jobs triggered on push, the Dependabot job is triggered on a
 schedule. The job is responsible for updating the dependencies of the
-microservice. Dependabot is a service, owned and built into Github #footnote("https://github.com/dependabot").
+microservice. Dependabot is a service, owned and built into GitHub #footnote("https://github.com/dependabot").
 
 #figure(
   image("./../assets/depbot.svg", width: 80%),

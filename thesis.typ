@@ -108,7 +108,7 @@
 
 #include "./personal/Acknowledgement.typ"
 
-= Declaration of independence
+= Statement of authorship
 
 Work that is demonstrably taken over in full or in the essential parts unchanged
 or without correct reference to the source is considered prefabricated and will
@@ -126,3 +126,15 @@ linebreak()
 
 Place / Date / Signature:
 
+#pagebreak(weak: true)
+#set par(linebreaks: "simple")
+#show bibliography: it => {
+      set heading(outlined: false)
+      show heading: it => [
+          #underline(smallcaps(it.body), evade: true, offset: 4pt)
+          #v(12pt)
+      ]
+
+      it
+  }
+#bibliography("./references.bib", style: "ieee")

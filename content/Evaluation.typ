@@ -336,7 +336,7 @@ caption: "rabbitmq-java-client installation",
 
 ==== API usage 
 
-Similar to Lapin, first a connection to the RabbitMQ server is established.
+Similar to lapin, first a connection to the RabbitMQ server is established.
 
 #figure(
 sourcecode()[```java 
