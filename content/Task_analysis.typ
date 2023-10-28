@@ -9,7 +9,7 @@ Multiple customers of Integon rely upon RabbitMQ as their designated messaging
 broker. Different systems write messages into a queue, the messages then need to be
 processed by other systems. If for some reason a specific message should be
 processed again, the owner of the processing system cannot retry
-processing the message. Said owner has to contact the owner of the sending
+processing the message because the messages are not persistent, once consumed the message is gone. Said owner has to contact the owner of the sending
 system and ask for a retransmission of the message. This is a time-consuming and
 costly process. The goal of this thesis is to develop a microservice that allows
 queueing messages again, without needing to contact the owner of the sending system.

@@ -627,8 +627,10 @@ For each use case, a separate sequence diagram is provided.
 
 A get request with a queue and a timeframe (from, to) is sent to the
 microservice. The replay component creates a new consumer and starts consuming
-messages from the queue. The consumer is stopped after the timeframe is reached.
-
+messages from the queue starting at the first offset of the stream. The consumer is stopped after the timeframe is reached or all messages are consumed.
+The consumer does not have any meta information about the queue, leading to the problem 
+that the consumer does not know when the queue is empty or if all messages are consumed.
+To retrieve the needed meta information, a request is sent to the RabbitMQ management API.
 #figure(
 image("../assets/sequence_diagram_get.svg"),
 caption: "Replay Sequence Diagram Get",
@@ -636,7 +638,6 @@ kind: image,
 )
 
 The consumed messages get aggregated and returned to the client.
-
 #pagebreak()
 
 *Post (timeframe)*<replay-post-timeframe>

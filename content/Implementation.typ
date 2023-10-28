@@ -426,8 +426,10 @@ where
     T: Serialize,
 ```]
 
-The `User` struct implements the `Serialize` trait, so this is also correct and the Return value
+The `User` struct implements the `Serialize` trait, allowing Serde to represent the struct as JSON, so this is correct and the Return value
 indeed implements the `IntoResponse` trait.
+#linebreak()
+This allows us to model the OpenAPI specification as rust struct's using them either as return type or as extractor and letting Serde take care of the serialization and deserialization.
 
 #pagebreak()
 
@@ -471,7 +473,7 @@ caption: [main function]
 The main function is marked as asynchronous using the `#[tokio::main]` macro.
 #linebreak()
 
-The first thing the main function does is initialize tracing. Tracing is a
+Tracing has been identified as an essential use case, thus the first thing the main function does is initialize tracing. Tracing is a
 framework for instrumenting Rust programs with structured logging and diagnostics.
 Tracing is provided by the crate `tracing`#footnote("https://docs.rs/tracing/latest/tracing/") and `tracing-subscriber`#footnote("https://docs.rs/tracing-subscriber/0.3.17/tracing_subscriber/"). 
 
@@ -1202,7 +1204,8 @@ Each message in a stream has an offset. The offset is used to identify the
 `x-stream-offset` header. The offset is optional on the `Message` struct because
 the offset is only available when the message gets read from the stream. If the
 message is being published, the publisher does not know the offset of the
-message.
+message. Consumers could keep track of the last acknowledged offset and use this 
+to identify the next message to consume from the stream.
 
 #linebreak()
 The `#[serde(skip_serializing_if = "Option::is_none")]` attribute is used to
@@ -2417,6 +2420,593 @@ match message_count {
 caption: [return number of messages in queue]
 )
 #pagebreak()
+
+== Testing
+
+The project contains two types of tests. The first type of tests are unit tests
+and the second type of tests are integration tests. Most functionalities of the
+replay microservice require a connection to a RabbitMQ server therefore more
+integration tests than unit tests are present. The integration tests use the
+library testcontainers#footnote("https://testcontainers.com/") to spin up a
+RabbitMQ server in a container for the tests. For each test, a new container is
+created. The container is destroyed after the test is finished. The tests are
+run in parallel to speed up the test execution.
+#linebreak()
+For all integration tests, some dummy data is needed in the queue. The dummy 
+data is created using the `create_dummy_data` function.
+
+#figure(
+  sourcecode()[```rs
+  async fn create_dummy_data(
+    port: u16,
+    message_count: i64,
+    queue_name: &str,
+) -> Result<Vec<Message>> {
+    let connection_string = format!("amqp://guest:guest@127.0.0.1:{port}");
+    let connection =
+        Connection::connect(&connection_string, ConnectionProperties::default()).await?;
+
+    let channel = connection.create_channel().await?;
+
+    let _ = channel
+        .queue_delete(queue_name, QueueDeleteOptions::default())
+        .await;
+
+    let mut queue_args = FieldTable::default();
+    queue_args.insert(
+        ShortString::from("x-queue-type"),
+        AMQPValue::LongString("stream".into()),
+    );
+
+    channel
+        .queue_declare(
+            queue_name,
+            QueueDeclareOptions {
+                durable: true,
+                auto_delete: false,
+                ..Default::default()
+            },
+            queue_args,
+        )
+        .await?;
+    let mut messages = Vec::new();
+    for i in 0..message_count {
+        let data = b"test";
+        let timestamp = Utc::now().timestamp_millis() as u64;
+        let transaction_id = format!("transaction_{}", i);
+        let mut headers = FieldTable::default();
+        headers.insert(
+            ShortString::from("x-stream-transaction-id"),
+            AMQPValue::LongString(transaction_id.clone().into()),
+        );
+
+        channel
+            .basic_publish(
+                "",
+                queue_name,
+                BasicPublishOptions::default(),
+                data,
+                AMQPProperties::default()
+                    .with_headers(headers.clone())
+                    .with_timestamp(timestamp),
+            )
+            .await?;
+        messages.push(Message {
+            offset: Some(i as u64),
+            transaction: Some(TransactionHeader::from_fieldtable(
+                headers,
+                "x-stream-transaction-id",
+            )?),
+            data: String::from_utf8(data.to_vec())?,
+            timestamp: Some(chrono::Utc.timestamp_millis_opt(timestamp as i64).unwrap()),
+        });
+        tokio::time::sleep(tokio::time::Duration::from_micros(1)).await;
+    }
+    Ok(messages)
+}
+```],
+caption: [create_dummy_data]
+)
+
+The function takes three arguments. The first argument is the port of the 
+RabbitMQ server. The second argument is the number of messages that should be
+created. The third argument is the name of the queue that should be used.
+The function returns a `Result<Vec<Message>>`. The `Message` struct is defined
+in @Message_struct.
+#linebreak()
+The function starts by establishing a connection to the RabbitMQ server. A
+channel is created and the queue is deleted if it already exists. The queue is
+created with the type `stream`. Afterwards a unique transaction id and timestamp 
+is generated for each message. The message is published to the queue. The 
+function returns the published messages.
+#linebreak()
+In order to ensure that the messages are published correctly, the `i_test_setup`
+test checks if the number of messages in the queue is equal to the number of
+messages that were published.
+
+#pagebreak()
+
+#figure(
+  sourcecode()[```rs
+  #[tokio::test]
+async fn i_test_setup() -> Result<()> {
+    let docker = clients::Cli::default();
+    let image = GenericImage::new("rabbitmq", "3.12-management").with_wait_for(
+        testcontainers::core::WaitFor::message_on_stdout("started TCP listener on [::]:5672"),
+    );
+    let image = image.with_exposed_port(5672).with_exposed_port(15672);
+    let node = docker.run(image);
+    let amqp_port = node.get_host_port_ipv4(5672);
+    let management_port = node.get_host_port_ipv4(15672);
+    let message_count = 500;
+    let queue_name = "replay";
+    let messages = create_dummy_data(amqp_port, message_count, queue_name).await?;
+    let client = reqwest::Client::new();
+
+    loop {
+        let res = client
+            .get(format!(
+                "http://localhost:{}/api/queues/%2f/{}",
+                management_port, queue_name
+            ))
+            .basic_auth("guest", Some("guest"))
+            .send()
+            .await?
+            .json::<serde_json::Value>()
+            .await?;
+        match res.get("messages") {
+            Some(m) => {
+                match res.get("type") {
+                    Some(t) => assert_eq!(t.as_str().unwrap(), "stream"),
+                    None => panic!("type not found"),
+                }
+                assert_eq!(m.as_i64().unwrap(), message_count);
+                break;
+            }
+            None => continue,
+        }
+    }
+    assert_eq!(messages.len(), message_count as usize);
+    Ok(())
+}
+```],
+caption: [integration test setup]
+)
+
+The test starts by pulling the `rabbitmq:3.12-management` image from Docker Hub.
+The image is started and the ports `5672` and `15672` are exposed. The `5672` port 
+is the port of the RabbitMQ server. The `15672` port is the port of the RabbitMQ 
+management API. The `create_dummy_data` function is called to create the dummy 
+data. The `reqwest` library is used to send a `GET` request to the RabbitMQ 
+management API. The response is deserialized into a `serde_json::Value` struct.
+The `messages` field is read from the response and checked if the `message_count`
+is equal to the number of messages that were published. If the number of messages 
+is equal, the test succeeds otherwise the test fails.
+#pagebreak()
+The `i_test_fetch_messages` test checks if the `fetch_messages` function returns
+the correct messages.
+#figure(
+  sourcecode()[```rs
+  #[tokio::test]
+async fn i_test_fetch_messsages() -> Result<()> {
+    let docker = clients::Cli::default();
+    let image = GenericImage::new("rabbitmq", "3.12-management").with_wait_for(
+        testcontainers::core::WaitFor::message_on_stdout("started TCP listener on [::]:5672"),
+    );
+    let image = image.with_exposed_port(5672).with_exposed_port(15672);
+    let node = docker.run(image);
+    let amqp_port = node.get_host_port_ipv4(5672);
+    let management_port = node.get_host_port_ipv4(15672);
+
+    let message_count = 500;
+    let queue_name = "replay";
+    let published_messages = create_dummy_data(amqp_port, message_count, queue_name).await?;
+    let client = reqwest::Client::new();
+    loop {
+        let res = client
+            .get(format!(
+                "http://localhost:{}/api/queues/%2f/{}",
+                management_port, queue_name
+            ))
+            .basic_auth("guest", Some("guest"))
+            .send()
+            .await?
+            .json::<serde_json::Value>()
+            .await?;
+        match res.get("messages") {
+            Some(m) => {
+                match res.get("type") {
+                    Some(t) => assert_eq!(t.as_str().unwrap(), "stream"),
+                    None => panic!("type not found"),
+                }
+                assert_eq!(m.as_i64().unwrap(), message_count);
+                break;
+            }
+            None => continue,
+        }
+    }
+
+    let mut cfg = Config::default();
+    cfg.url = Some(format!("amqp://guest:guest@127.0.0.1:{}/%2f", amqp_port));
+
+    cfg.pool = Some(PoolConfig::new(1));
+
+    let pool = cfg.create_pool(Some(Runtime::Tokio1)).unwrap();
+    let rabbitmq_config = RabbitmqApiConfig {
+        username: "guest".to_string(),
+        password: "guest".to_string(),
+        host: "localhost".to_string(),
+        port: management_port.to_string(),
+    };
+
+    let message_options = rabbit_revival::MessageOptions {
+        transaction_header: Some("x-stream-transaction-id".to_string()),
+        enable_timestamp: true,
+    };
+
+    let message_query = MessageQuery {
+        queue: queue_name.to_string(),
+        from: None,
+        to: None,
+    };
+
+    let messages = fetch_messages(&pool, &rabbitmq_config, &message_options, message_query).await?;
+
+    assert_eq!(messages.len(), message_count as usize);
+
+    messages.iter().enumerate().for_each(|(i, m)| {
+        assert_eq!(m.data, published_messages[i].data);
+        assert_eq!(m.offset, published_messages[i].offset);
+        assert_eq!(m.timestamp, published_messages[i].timestamp);
+        assert_eq!(
+            m.transaction.as_ref().unwrap().name,
+            published_messages[i].transaction.as_ref().unwrap().name
+        );
+        assert_eq!(
+            m.transaction.as_ref().unwrap().value,
+            published_messages[i].transaction.as_ref().unwrap().value
+        );
+    });
+
+    Ok(())
+}
+```],
+caption: [integration test fetch messages]
+)
+
+The test starts by starting the RabbitMQ server and creating the dummy data.
+The `fetch_messages` function is called with the `from` and `to` parameters set 
+to `None`. The `fetch_messages` function returns all messages in the queue.
+The returned messages are compared to the published messages. If the messages are 
+equal, the test succeeds otherwise the test fails.
+#pagebreak()
+The `i_test_replay_time_frame` test checks if the `replay_time_frame` function 
+publishes the correct messages.
+#figure(
+  sourcecode()[```rs
+  #[tokio::test]
+async fn i_test_replay_time_frame() -> Result<()> {
+    let docker = clients::Cli::default();
+    let image = GenericImage::new("rabbitmq", "3.12-management").with_wait_for(
+        testcontainers::core::WaitFor::message_on_stdout("started TCP listener on [::]:5672"),
+    );
+    let image = image.with_exposed_port(5672).with_exposed_port(15672);
+    let node = docker.run(image);
+    let amqp_port = node.get_host_port_ipv4(5672);
+    let management_port = node.get_host_port_ipv4(15672);
+
+    let message_count = 500;
+    let queue_name = "replay";
+    let published_messages = create_dummy_data(amqp_port, message_count, queue_name).await?;
+    let client = reqwest::Client::new();
+    loop {
+        let res = client
+            .get(format!(
+                "http://localhost:{}/api/queues/%2f/{}",
+                management_port, queue_name
+            ))
+            .basic_auth("guest", Some("guest"))
+            .send()
+            .await?
+            .json::<serde_json::Value>()
+            .await?;
+        match res.get("messages") {
+            Some(m) => {
+                match res.get("type") {
+                    Some(t) => assert_eq!(t.as_str().unwrap(), "stream"),
+                    None => panic!("type not found"),
+                }
+                assert_eq!(m.as_i64().unwrap(), message_count);
+                break;
+            }
+            None => continue,
+        }
+    }
+
+    let mut cfg = Config::default();
+    cfg.url = Some(format!("amqp://guest:guest@localhost:{}/%2f", amqp_port));
+
+    cfg.pool = Some(PoolConfig::new(1));
+
+    let pool = cfg.create_pool(Some(Runtime::Tokio1)).unwrap();
+    let rabbitmq_config = RabbitmqApiConfig {
+        username: "guest".to_string(),
+        password: "guest".to_string(),
+        host: "localhost".to_string(),
+        port: management_port.to_string(),
+    };
+
+    let time_frame_replay = TimeFrameReplay {
+        queue: queue_name.to_string(),
+        from: published_messages.first().unwrap().timestamp.unwrap(),
+        to: published_messages.last().unwrap().timestamp.unwrap(),
+    };
+
+    let replayed_messages = replay_time_frame(&pool, &rabbitmq_config, time_frame_replay).await?;
+
+    assert_eq!(replayed_messages.len(), published_messages.len());
+
+    replayed_messages.iter().enumerate().for_each(|(i, m)| {
+        let m = m.clone();
+        assert_eq!(
+            String::from_utf8(m.data.clone()).unwrap(),
+            published_messages[i].data
+        );
+        let headers = m.properties.headers().clone().unwrap();
+        let offset = headers.inner().get("x-stream-offset").unwrap();
+        let offset = match offset {
+            AMQPValue::LongLongInt(i) => i,
+            _ => panic!("offset not found"),
+        };
+        let timestamp = m.properties.timestamp().unwrap();
+        let timestamp = Utc.timestamp_millis_opt(timestamp as i64).unwrap();
+        assert_eq!(*offset as u64, published_messages[i].offset.unwrap());
+        assert_eq!(timestamp, published_messages[i].timestamp.unwrap());
+    });
+
+    let time_frame_replay = TimeFrameReplay {
+        queue: queue_name.to_string(),
+        from: published_messages.last().unwrap().timestamp.unwrap(),
+        to: published_messages.last().unwrap().timestamp.unwrap(),
+    };
+    let replayed_messages = replay_time_frame(&pool, &rabbitmq_config, time_frame_replay).await?;
+    assert_eq!(replayed_messages.len(), 1);
+
+    assert_eq!(
+        String::from_utf8(replayed_messages[0].data.clone()).unwrap(),
+        published_messages.last().unwrap().data
+    );
+
+    Ok(())
+}
+```],
+caption: [integration test replay time frame]
+)
+
+The test starts by starting the RabbitMQ server and creating the dummy data.
+The `replay_time_frame` function is called with the `from` and `to` parameters 
+set to the first and last message in the queue. The `replay_time_frame` function should 
+republish all messages in the queue. The returned messages are compared to the 
+published messages. If the messages are equal, the test succeeds otherwise the 
+test fails.
+#pagebreak()
+The last test checks if the `replay_transaction` function republishes the correct 
+messages.
+#figure(
+  sourcecode()[```rs
+  #[tokio::test]
+async fn i_test_replay_header() -> Result<()> {
+    let docker = clients::Cli::default();
+    let image = GenericImage::new("rabbitmq", "3.12-management").with_wait_for(
+        testcontainers::core::WaitFor::message_on_stdout("started TCP listener on [::]:5672"),
+    );
+    let image = image.with_exposed_port(5672).with_exposed_port(15672);
+    let node = docker.run(image);
+    let amqp_port = node.get_host_port_ipv4(5672);
+    let management_port = node.get_host_port_ipv4(15672);
+
+    let message_count = 500;
+    let queue_name = "replay";
+    let published_messages = create_dummy_data(amqp_port, message_count, queue_name).await?;
+    let client = reqwest::Client::new();
+    loop {
+        let res = client
+            .get(format!(
+                "http://localhost:{}/api/queues/%2f/{}",
+                management_port, queue_name
+            ))
+            .basic_auth("guest", Some("guest"))
+            .send()
+            .await?
+            .json::<serde_json::Value>()
+            .await?;
+        match res.get("messages") {
+            Some(m) => {
+                match res.get("type") {
+                    Some(t) => assert_eq!(t.as_str().unwrap(), "stream"),
+                    None => panic!("type not found"),
+                }
+                assert_eq!(m.as_i64().unwrap(), message_count);
+                break;
+            }
+            None => continue,
+        }
+    }
+
+    let mut cfg = Config::default();
+    cfg.url = Some(format!("amqp://guest:guest@localhost:{}/%2f", amqp_port));
+
+    cfg.pool = Some(PoolConfig::new(1));
+
+    let pool = cfg.create_pool(Some(Runtime::Tokio1)).unwrap();
+    let rabbitmq_config = RabbitmqApiConfig {
+        username: "guest".to_string(),
+        password: "guest".to_string(),
+        host: "localhost".to_string(),
+        port: management_port.to_string(),
+    };
+
+    for m in published_messages {
+        let header_replay = HeaderReplay {
+            queue: queue_name.to_string(),
+            header: rabbit_revival::AMQPHeader {
+                name: "x-stream-transaction-id".to_string(),
+                value: m.transaction.unwrap().value,
+            },
+        };
+        let replayed_messages =
+            rabbit_revival::replay::replay_header(&pool, &rabbitmq_config, header_replay).await?;
+        assert_eq!(replayed_messages.len(), 1);
+    }
+
+    Ok(())
+}
+```],
+caption: [integration test replay header]
+)
+
+The test starts by starting the RabbitMQ server and creating the dummy data.
+The `replay_header` function is called for each message. The transaction id of the
+previously published message is used as the indicator for which message should be republished.
+The returned messages are compared to the published messages. If the messages are 
+equal, the test succeeds otherwise the test fails.
+#linebreak()
+Only one unit test is present. The unit test checks if the `is_within_timeframe` method 
+returns the correct result.
+#figure(
+  sourcecode()[```rs
+  #[cfg(test)]
+mod tests {
+    use chrono::{TimeZone, Utc};
+
+    #[tokio::test]
+    async fn test_is_within_timeframe() {
+        let tests = vec![
+            (
+                Some(Utc.with_ymd_and_hms(2021, 10, 13, 0, 0, 0).unwrap()), 
+                Some(Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap()), 
+                Some(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap()),
+                Some(false),
+            ),
+            (
+                Some(Utc.with_ymd_and_hms(2022, 3, 13, 0, 0, 0).unwrap()),
+                Some(Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap()), 
+                Some(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap()), 
+                Some(true),
+            ),
+            (
+                Some(Utc.with_ymd_and_hms(2022, 8, 13, 0, 0, 0).unwrap()),
+                Some(Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap()),
+                Some(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap()), 
+                Some(true),
+            ),
+            (
+                Some(Utc.with_ymd_and_hms(2023, 1, 13, 0, 0, 0).unwrap()),
+                Some(Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap()), 
+                Some(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap()),
+                Some(false),
+            ),
+            (
+                Some(Utc.with_ymd_and_hms(2023, 6, 13, 0, 0, 0).unwrap()), 
+                Some(Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap()), 
+                Some(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap()),
+                Some(false),
+            ),
+            (
+                None,
+                Some(Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap()),
+                Some(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap()),
+                Some(false),
+            ),
+            (None, None, None, None),
+            (
+                None,
+                None,
+                Some(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap()),
+                Some(false),
+            ),
+            (
+                Some(Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap()),
+                None,
+                Some(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap()),
+                Some(true),
+            ),
+            (
+                Some(Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap()),
+                Some(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap()),
+                None,                                                   
+                Some(false),
+            ),
+            (
+                Some(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap()),
+                Some(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap()),
+                None,                                                    
+                Some(true),
+            ),
+            (
+                Some(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap()),
+                None,                                                   
+                None,                                                  
+                Some(true),
+            ),
+        ];
+        ```],
+        caption: [unit test is_within_timeframe]
+    )
+    #pagebreak()
+    #figure(
+      sourcecode()[```rs
+        for (date, from, to, expected) in tests {
+            assert_eq!(
+                expected,
+                super::is_within_timeframe(
+                    date.map(|date| date.timestamp_millis() as u64),
+                    from,
+                    to
+                )
+            );
+        }
+    }
+}
+```],
+caption: [unit test is_within_timeframe]
+)
+
+The test creates a vector of tuples. Each tuple contains a date, a from timestamp,
+a to timestamp and the expected result. The `is_within_timeframe` method is called
+for each tuple. The result is compared to the expected result. If the results are 
+equal, the test succeeds otherwise the test fails.
+#linebreak()
+
+The tests can be run using the following command:
+#figure(
+  sourcecode()[```bash
+  cargo test 
+```],
+caption: [run tests]
+)
+
+Resulting in the following output:
+#figure(
+  sourcecode()[```bash
+  ❯ cargo test
+Running unittests src/lib.rs (target/debug/deps/rabbit_revival-4c2723c50157660b)
+running 1 test
+test replay::tests::test_is_within_timeframe ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+Running tests/integration_test.rs (target/debug/deps/integration_test-5f8eb0fca711dac4)
+running 4 tests
+test i_test_setup ... ok
+test i_test_replay_time_frame ... ok
+test i_test_fetch_messsages ... ok
+test i_test_replay_header ... ok
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 47.30s
+```],
+caption: [test output]
+)
+
+#pagebreak()
+
 == Container
 
 The microservice is packaged as a container using Docker as the container 

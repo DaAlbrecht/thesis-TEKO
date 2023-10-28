@@ -41,7 +41,7 @@ determine how to route the message to the queue. The binding key is specific to
 the exchange type. For an overview of the different exchange types, see @exchange-types.
 
 Consumers have two options for interacting with queues: they can either passively subscribe to
-a queue and receive messages as they arrive, or they can actively fetch messages
+one or many queues and receive messages as they arrive, or they can actively fetch messages
 from the queue when they choose to do so.
 
 == Exchange<exchange>
@@ -76,6 +76,7 @@ caption: [Exchange Types],
 
 The default exchange@rabbitmq-default-exchange is an unattributed exchange provided by the broker without
 a specific name (it's represented by an empty string). The default exchange is a RabbitMQ extension to the AMQP 0-9-1 direct exchange specification.
+It is a direct exchange with a pre-declared name that cannot be changed.
 The default exchange routes every message it receives to a queue with the same name as the routing key of the message.
 
 #figure(
@@ -93,6 +94,8 @@ default exchange with the routing key "inventory" will be directed to the "inven
 queue. Essentially, the default exchange creates the illusion of delivering
 messages directly to queues, even though that's not precisely what's occurring
 from a technical standpoint.
+The main difference between the default exchange and a direct exchange is, that
+the default exchange cannot be explicitly bound to queues.
 
 #pagebreak()
 
