@@ -503,8 +503,6 @@ in the following table. The criteria are weighted with a value from 1 to 5, wher
 weight with the score for each criterion. The total score is then used to compare 
 the libraries.
 
-  #[
-  #show regex("\w"): it => [#sym.zws;#it]
 #figure(
 tablex(
 columns: (3fr, 2fr, 3fr, 1fr,1fr,1fr),
@@ -530,7 +528,7 @@ align: (left + horizon , center + horizon, left + horizon, center + horizon, cen
 [4],
 [Documentation],
 [5],
-[Clear,complete and maintained documentation],
+[Clear, complete and maintained documentation],
 [4],
 [4],
 [3],
@@ -578,7 +576,6 @@ align: (left + horizon , center + horizon, left + horizon, center + horizon, cen
 [*130*]
 )
 )
-]
 
 The installation process for all three libraries was well documented. With Java,
 the initial setup was not as easy as with the other two. The only annoyance with

@@ -41,7 +41,7 @@ determine how to route the message to the queue. The binding key is specific to
 the exchange type. For an overview of the different exchange types, see @exchange-types.
 
 Consumers have two options for interacting with queues: they can either passively subscribe to
-one or many queues and receive messages as they arrive, or they can actively fetch messages
+one or multiple queues and receive messages as they arrive, or they can actively fetch messages
 from the queue when they choose to do so.
 
 == Exchange<exchange>
@@ -105,7 +105,7 @@ A direct exchange@rabbitmq-direct-exchange operates by delivering messages to qu
 binding key. It is well-suited for single-target (unicast) message routing but
 can also be applied to multicast routing scenarios.
 
-Here's a breakdown of how it functions:
+Here is a breakdown of how it functions:
 
 #figure(
 image("../assets/rabbitmq_direct_exchange.svg" ,width: 70%),

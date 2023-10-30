@@ -429,7 +429,7 @@ where
 The `User` struct implements the `Serialize` trait, allowing Serde to represent the struct as JSON, so this is correct and the Return value
 indeed implements the `IntoResponse` trait.
 #linebreak()
-This allows us to model the OpenAPI specification as rust struct's using them either as return type or as extractor and letting Serde take care of the serialization and deserialization.
+This allows us to model the OpenAPI specification as Rust struct's using them either as return type or as extractor and letting Serde take care of the serialization and deserialization.
 
 #pagebreak()
 

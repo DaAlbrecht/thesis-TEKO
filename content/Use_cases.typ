@@ -4,7 +4,7 @@ Three  main use cases exist.
 - Get messages based on a given time interval and  a queue
 
 #figure(
-image("../assets/use_case_diagram.svg", width: 70%),
+image("../assets/use_case_diagram.svg", width: 65%),
 kind: image,
 caption: "Use case diagram",
 )<use_case_diagram>

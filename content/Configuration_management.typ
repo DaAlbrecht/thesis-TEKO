@@ -3,8 +3,6 @@
 The microservice uses environment variables to configure the behavior. The following variables are supported:
 
 
-  #[
-  #show regex("\w"): it => [#sym.zws;#it]
   #figure(
       table(
     columns: (1fr, 1fr,auto),
@@ -44,6 +42,5 @@ The microservice uses environment variables to configure the behavior. The follo
     kind: table,
     caption: "Environment variables"
     )
-]
 
 #pagebreak()
